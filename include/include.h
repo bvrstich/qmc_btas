@@ -17,12 +17,16 @@ namespace btas { typedef SpinQuantum Quantum; };
 #include <btas/DENSE/TConj.h>
 #include <btas/DENSE/TCONTRACT.h>
 
+#include <btas/DENSE/ZArray.h>
+
 #include <btas/SPARSE/STConj.h>
 
 #include <btas/QSPARSE/QSTArray.h>
 #include <btas/QSPARSE/QSTLAPACK.h>
 
+#include <btas/QSPARSE/QSZArray.h>
+
 #include <MPSblas.h>
 
 #include "Random.h"
-//#include "SpinHamiltonian.h"
+#include "SpinHamiltonian.h"

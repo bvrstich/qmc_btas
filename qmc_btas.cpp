@@ -29,48 +29,10 @@ int main(int argc,char *argv[]){
    cout.precision(15);
    srand(time(NULL));
 
-   int L = 10;
+   int L = 20;
 
    int D = 10;
    int d = 2;
-
-   Qshapes<Quantum> qp;
-
-   int m = -d + 1;
-
-   while(m < d){
-
-      qp.push_back(Quantum(m));
-
-      m += 2;
-
-   }
-
-   MPS<double,Quantum> A = create< double >(L,Quantum::zero(),qp,D,rgen_real);
-   normalize(A);
-
-   save_mpx(A,"/tmp/input/A");
-
-   MPS<double,Quantum> B = create< double >(L,Quantum::zero(),qp,D,rgen_real);
-   normalize(B);
-
-   save_mpx(B,"/tmp/input/B");
-
-   cout << dot(mpsxx::Left,A,B) << endl;
-
-   cout << compress(A,mpsxx::Left,0) << endl;
-   cout << compress(A,mpsxx::Right,0) << endl;
-
-   cout << compress(A,mpsxx::Left,0) << endl;
-   cout << compress(A,mpsxx::Right,0) << endl;
-
-   cout << compress(B,mpsxx::Left,0) << endl;
-   cout << compress(B,mpsxx::Right,0) << endl;
-
-   cout << compress(B,mpsxx::Left,0) << endl;
-   cout << compress(B,mpsxx::Right,0) << endl;
-
-   cout << dot(mpsxx::Left,A,B) << endl;
 
    return 0;
 
