@@ -10,7 +10,6 @@
 BINNAME = qmc_btas
 CPPSRC	= qmc_btas.cpp\
            Random.cpp\
-           SpinHamiltonian.cpp
 
 
 OBJ	= $(CPPSRC:.cpp=.o)

@@ -29,7 +29,7 @@ int main(int argc,char *argv[]){
    cout.precision(15);
    srand(time(NULL));
 
-   int L = 20;
+   int L = 10;
 
    int D = 10;
    int d = 2;
@@ -46,38 +46,31 @@ int main(int argc,char *argv[]){
 
    }
 
-   MPS<Quantum> A = create(L,Quantum::zero(),qp,D,rgen_real);
+   MPS<double,Quantum> A = create< double >(L,Quantum::zero(),qp,D,rgen_real);
+   normalize(A);
 
    save_mpx(A,"/tmp/input/A");
 
-   normalize(A);
+   MPS<double,Quantum> B = create< double >(L,Quantum::zero(),qp,D,rgen_real);
+   normalize(B);
+
+   save_mpx(B,"/tmp/input/B");
+
+   cout << dot(mpsxx::Left,A,B) << endl;
 
    cout << compress(A,mpsxx::Left,0) << endl;
    cout << compress(A,mpsxx::Right,0) << endl;
 
-   MPS<Quantum> B = create(L,Quantum::zero(),qp,D,rgen_real);
-
-   save_mpx(B,"/tmp/input/B");
-
-   normalize(B);
+   cout << compress(A,mpsxx::Left,0) << endl;
+   cout << compress(A,mpsxx::Right,0) << endl;
 
    cout << compress(B,mpsxx::Left,0) << endl;
    cout << compress(B,mpsxx::Right,0) << endl;
 
-   DArray<2> J(L,L);
+   cout << compress(B,mpsxx::Left,0) << endl;
+   cout << compress(B,mpsxx::Right,0) << endl;
 
-   J.generate(rgen_real);
-
-   MPO<Quantum> O = heisenberg<Quantum>(J,0.0);
-
-   cout << inprod(mpsxx::Left,A,O,B) << endl;
-
-   save_mpx(O,"/tmp/input/MPO");
-
-   cout << compress(O,mpsxx::Left,0) << endl;
-   cout << compress(O,mpsxx::Right,0) << endl;
-
-   cout << inprod(mpsxx::Left,A,O,B) << endl;
+   cout << dot(mpsxx::Left,A,B) << endl;
 
    return 0;
 
