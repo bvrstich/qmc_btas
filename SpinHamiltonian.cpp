@@ -12,19 +12,13 @@ using std::ostream;
  * @param qp Qshapes object containing the local quantumnumbers on output, input is destroyed
  */
 template<class Q>
-void physical(int d,Qshapes<Q> &qp){
+void physical(int d,Qshapes<Q> &qp,Dshapes &dp){
 
    qp.clear();
+   dp.clear();
 
-   int m = -d + 1;
-
-   while(m < d){
-
-      qp.push_back(Q(m));
-
-      m += 2;
-
-   }
+   qp.push_back(Q::zero());
+   dp.push_back(d);
 
 }
 
@@ -53,22 +47,28 @@ void insert_Sz(QSZArray<4,Q> &O,int row,int col,complex<double> val){
 }
 
 template<class Q>
-void insert_Sp(QSZArray<4,Q> &O,int row,int col,complex<double> val){
+void insert_Sy(QSZArray<4,Q> &O,int row,int col,complex<double> val){
 
    ZArray<4> Ip(1,1,1,1);
 
-   Ip = val;
+   Ip = val * complex<double>(0.0,1.0);
+   O.insert(shape(row,0,1,col),Ip);
+
+   Ip = val * complex<double>(0.0,-1.0);
    O.insert(shape(row,1,0,col),Ip);
 
 }
 
 template<class Q>
-void insert_Sm(QSZArray<4,Q> &O,int row,int col,complex<double> val){
+void insert_Sx(QSZArray<4,Q> &O,int row,int col,complex<double> val){
 
    ZArray<4> Ip(1,1,1,1);
 
    Ip = val;
    O.insert(shape(row,0,1,col),Ip);
+
+   Ip = val;
+   O.insert(shape(row,1,0,col),Ip);
 
 }
 
@@ -78,7 +78,7 @@ void insert_Sm(QSZArray<4,Q> &O,int row,int col,complex<double> val){
  * @param B magnetic fieldstrength
  */
 template<class Q>
-MPO<complex<double>,Q> heisenberg(const DArray<2> &J,double B){
+MPO<complex<double>,Q> heisenberg(int d,const DArray<2> &J,double B){
 
    int L = J.shape(0);
 
@@ -86,31 +86,25 @@ MPO<complex<double>,Q> heisenberg(const DArray<2> &J,double B){
 
    //physical indices
    Qshapes<Q> qp;
-   physical(2,qp);
+   Dshapes dp;
+
+   physical(d,qp,dp);
 
    Qshapes<Q> qz;
    qz.push_back(Q::zero());
 
-   //incoming
-   Qshapes<Q> qi;
-   Qshapes<Q> qo;
-
-   qo.push_back(Q::zero());//I has spin 0
-   qo.push_back(Q(2));//S+ has spin 2
-   qo.push_back(Q(-2));//S- has spin 2
-   qo.push_back(Q::zero());//Sz has spin 0
-   qo.push_back(Q::zero());//B has spin 0
-
    //initialize the quantumnumbers of the MPO<Q>
-   mpo[0].resize(Q::zero(),make_array(qz,qp,-qp,qo));
+   mpo[0].resize(Q::zero(),make_array(qz,qp,-qp,qz));
 
    //set the input: first site
+   /*
    insert_id(mpo[0],0,0,1.0);
-   insert_Sm(mpo[0],0,1,1.0);
-   insert_Sp(mpo[0],0,2,1.0);
+   insert_Sx(mpo[0],0,1,1.0);
+   insert_Sy(mpo[0],0,2,1.0);
    insert_Sz(mpo[0],0,3,1.0);
    insert_Sz(mpo[0],0,4,B);
-
+   */
+/*
    //before middle site
    for(int i = 1;i < L/2;++i){
 
@@ -467,10 +461,10 @@ MPO<complex<double>,Q> heisenberg(const DArray<2> &J,double B){
    QSTmerge(info,mpo[L - 1],tmp);
 
    mpo[L - 1] = tmp;
-
+*/
    return mpo;
 
 }
 
-template void physical<Quantum>(int d,Qshapes<Quantum> &);
-template MPO<complex<double>,Quantum> heisenberg<Quantum>(const DArray<2> &,double B);
+template void physical<Quantum>(int d,Qshapes<Quantum> &,Dshapes &dp);
+template MPO<complex<double>,Quantum> heisenberg<Quantum>(int d,const DArray<2> &,double B);

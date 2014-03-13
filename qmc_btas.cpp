@@ -29,10 +29,24 @@ int main(int argc,char *argv[]){
    cout.precision(15);
    srand(time(NULL));
 
-   int L = 20;
+   int L = 4;
 
    int D = 10;
    int d = 2;
+   
+   Qshapes<Quantum> qp;
+   Dshapes dp;
+
+   physical(d,qp,dp);
+
+   MPS< complex<double> , Quantum > A = create< complex<double> , Quantum >(L,Quantum::zero(),qp,dp,D,rgen_complex);
+
+   DArray<2> J(L,L);
+   J.generate(rgen_real);
+
+   MPO< complex<double> , Quantum > O = heisenberg<Quantum>(d,J,0.0);
+
+   cout << O << endl;
 
    return 0;
 
