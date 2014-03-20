@@ -17,6 +17,7 @@ namespace btas { typedef SpinQuantum Quantum; };
 #include <btas/DENSE/TConj.h>
 #include <btas/DENSE/TCONTRACT.h>
 
+#include <btas/DENSE/DArray.h>
 #include <btas/DENSE/ZArray.h>
 
 #include <btas/SPARSE/STConj.h>
@@ -30,3 +31,6 @@ namespace btas { typedef SpinQuantum Quantum; };
 
 #include "Random.h"
 #include "SpinHamiltonian.h"
+#include "Coupling.h"
+#include "Trotter.h"
+#include "Walker.h"

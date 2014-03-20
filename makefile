@@ -10,7 +10,10 @@
 BINNAME = qmc_btas
 CPPSRC	= qmc_btas.cpp\
            Random.cpp\
-           SpinHamiltonian.cpp
+           SpinHamiltonian.cpp\
+           Coupling.cpp\
+           Trotter.cpp\
+           Walker.cpp
 
 
 OBJ	= $(CPPSRC:.cpp=.o)
@@ -30,7 +33,6 @@ BTASLIB= /home/bright/btas/lib
 INCLUDE = ./include $(BTASINC) $(MPSINC)
 
 LIBS= -lpthread -lmkl_intel_lp64 -lmkl_sequential -lmkl_core $(BOOSTLIB) $(BTASLIB)/libbtas.a 
-#LIBS= -llapack -lblas
 
 CC	= gcc
 CXX	= g++
@@ -38,8 +40,8 @@ CXX	= g++
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
-CFLAGS	= -I$(INCLUDE) -std=c++11 -g -D_HAS_CBLAS -D_HAS_INTEL_MKL
-LDFLAGS	= -g 
+CFLAGS	= -I$(INCLUDE) -g -std=c++11 -D_SERIAL -D_HAS_CBLAS -D_HAS_INTEL_MKL 
+LDFLAGS	= -g -std=c++11
 
 # =============================================================================
 #   Targets & Rules
