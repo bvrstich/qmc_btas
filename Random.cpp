@@ -3,7 +3,7 @@
 #include <omp.h>
 #include <time.h>
 
-#include "Random.h"
+#include "include.h"
 
 /*  Written by Sebastian Wouters <sebastianwouters@gmail.com> on September 4, 2013 */
 

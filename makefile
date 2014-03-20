@@ -13,7 +13,8 @@ CPPSRC	= qmc_btas.cpp\
            SpinHamiltonian.cpp\
            Coupling.cpp\
            Trotter.cpp\
-           Walker.cpp
+           Walker.cpp\
+           Tools.cpp
 
 
 OBJ	= $(CPPSRC:.cpp=.o)
