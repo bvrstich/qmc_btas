@@ -78,7 +78,7 @@ void insert_Sm(QSZArray<4,Q> &O,int row,int col,complex<double> val){
  * @param B magnetic fieldstrength
  */
 template<class Q>
-MPO<complex<double>,Q> heisenberg(const DArray<2> &J,double B){
+MPO<complex<double>,Q> heisenberg(bool merge,const DArray<2> &J,double B){
 
    int L = J.shape(0);
 
@@ -418,59 +418,63 @@ MPO<complex<double>,Q> heisenberg(const DArray<2> &J,double B){
    insert_Sz(mpo[L - 1],3,0,1.0);
    insert_Sz(mpo[L - 1],4,0,B);
 
-   //merge everything together
-   TVector<Qshapes<Q>,1> qmerge;
-   TVector<Dshapes,1> dmerge;
+   if(merge){
 
-   qmerge[0] = mpo[0].qshape(3);
-   dmerge[0] = mpo[0].dshape(3);
+      //merge everything together
+      TVector<Qshapes<Q>,1> qmerge;
+      TVector<Dshapes,1> dmerge;
 
-   QSTmergeInfo<1> info(qmerge,dmerge);
+      qmerge[0] = mpo[0].qshape(3);
+      dmerge[0] = mpo[0].dshape(3);
 
-   QSTArray< complex<double> ,4,Q> tmp;
-   QSTmerge(mpo[0],info,tmp);
+      QSTmergeInfo<1> info(qmerge,dmerge);
 
-   mpo[0] = tmp;
+      QSTArray< complex<double> ,4,Q> tmp;
+      QSTmerge(mpo[0],info,tmp);
 
-   for(int i = 1;i < L - 1;++i){
+      mpo[0] = tmp;
 
-      //first merge the row
-      qmerge[0] = mpo[i].qshape(0);
-      dmerge[0] = mpo[i].dshape(0);
+      for(int i = 1;i < L - 1;++i){
+
+         //first merge the row
+         qmerge[0] = mpo[i].qshape(0);
+         dmerge[0] = mpo[i].dshape(0);
+
+         info.reset(qmerge,dmerge);
+
+         tmp.clear();
+
+         QSTmerge(info,mpo[i],tmp);
+
+         //then merge the column
+         qmerge[0] = tmp.qshape(3);
+         dmerge[0] = tmp.dshape(3);
+
+         info.reset(qmerge,dmerge);
+
+         mpo[i].clear();
+
+         QSTmerge(tmp,info,mpo[i]);
+
+      }
+
+      //only merge row for i = L - 1
+      qmerge[0] = mpo[L - 1].qshape(0);
+      dmerge[0] = mpo[L - 1].dshape(0);
 
       info.reset(qmerge,dmerge);
 
       tmp.clear();
 
-      QSTmerge(info,mpo[i],tmp);
+      QSTmerge(info,mpo[L - 1],tmp);
 
-      //then merge the column
-      qmerge[0] = tmp.qshape(3);
-      dmerge[0] = tmp.dshape(3);
-
-      info.reset(qmerge,dmerge);
-
-      mpo[i].clear();
-
-      QSTmerge(tmp,info,mpo[i]);
+      mpo[L - 1] = tmp;
 
    }
-
-   //only merge row for i = L - 1
-   qmerge[0] = mpo[L - 1].qshape(0);
-   dmerge[0] = mpo[L - 1].dshape(0);
-
-   info.reset(qmerge,dmerge);
-
-   tmp.clear();
-
-   QSTmerge(info,mpo[L - 1],tmp);
-
-   mpo[L - 1] = tmp;
 
    return mpo;
 
 }
 
 template void physical<Quantum>(int d,Qshapes<Quantum> &);
-template MPO<complex<double>,Quantum> heisenberg<Quantum>(const DArray<2> &,double B);
+template MPO<complex<double>,Quantum> heisenberg<Quantum>(bool,const DArray<2> &,double B);

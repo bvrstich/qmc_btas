@@ -11,7 +11,7 @@ using std::complex;
 
 //some functions which initialize an MPO to a certian Hamiltonian
 template<class Q>
-MPO<complex<double>,Q> heisenberg(const DArray<2> &J,double B);
+MPO<complex<double>,Q> heisenberg(bool,const DArray<2> &J,double B);
 
 template<class Q>
 void physical(int d,Qshapes<Q> &qp);
