@@ -15,6 +15,9 @@ template<class Q>
 MPO<complex<double>,Q> heisenberg(int d,const DArray<2> &J,double B);
 
 template<class Q>
+MPO<complex<double>,Q> afmpo(int d,int k,int r,const ZArray<2> &V);
+
+template<class Q>
 void physical(int d,Qshapes<Q> &qp,Dshapes &dp);
 
 template<class Q>

@@ -19,6 +19,7 @@ Walker::Walker(const MPS<complex<double>,Quantum> &PsiW, double weight,int n_tro
    this->PsiW = PsiW;
    this->weight = weight;
    this->n_trot = n_trot;
+   overlap = 1.0;
 
    VL.resize(3*n_trot);
 
@@ -140,5 +141,71 @@ void Walker::sEL(const MPO<complex<double>,Quantum> &O,const MPS<complex<double>
 void Walker::sEL(complex<double> EL_in){
 
    EL = EL_in;
+
+}
+
+/** 
+ * set the shifts, the auxiliary field projected expectation values: <PsiT|v|PsiW>/<PsiT|PsiW> --> overlap has to be set
+ * @param O mpo containing Hamiltonian
+ * @param Psi0 trial wavefunction 
+ */
+void Walker::sVL(const Trotter &trotter,const MPS<complex<double>,Quantum> &Psi0){
+
+   for(int k = 0;k < n_trot;++k)
+      for(int r = 0;r < 3;++r)
+         VL[r*n_trot + k] = inprod(mpsxx::Left,PsiW,trotter.gV_op(k,r),Psi0) / overlap;
+
+}
+
+
+/**
+ * muliply the weight by a factor
+ */
+void Walker::multWeight(double factor){
+   
+   weight *= factor; 
+   
+}
+
+/**
+ * muliply the weight by a factor
+ */
+void Walker::sWeight(double new_weight){
+   
+   weight = new_weight;
+   
+}
+
+/**
+ * Apply the propagator (a D=1 MPO) to the current state of the walker. The MPS is changed when calling this function
+ * @param P the propagator
+ */
+void Walker::propagate(const Propagator &P){
+
+   QSZArray<3,Quantum> tmp;
+
+   complex<double> one(1.0,0.0);
+   complex<double> zero(0.0,0.0);
+
+   enum {j,k,l,m};
+
+   for(int i = 0;i < PsiW.size();++i){
+
+      tmp.clear();
+
+      QSZcontract(one,P[i],shape(k,m),PsiW[i],shape(j,k,l),zero,tmp,shape(j,m,l));
+
+      PsiW[i] = tmp;
+
+   }
+
+}
+
+/**
+ * @return the projected expectation value of the shift corresponding to trotter indices k and r
+ */
+complex<double> Walker::gVL(int k,int r) const {
+
+   return VL[r*n_trot + k];
 
 }

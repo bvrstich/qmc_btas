@@ -35,3 +35,5 @@ namespace btas { typedef SpinQuantum Quantum; };
 #include "Trotter.h"
 #include "Walker.h"
 #include "Tools.h"
+#include "AFQMC.h"
+#include "Propagator.h"

@@ -384,60 +384,83 @@ MPO<complex<double>,Q> heisenberg(int d,const DArray<2> &J,double B){
    insert_Sy(mpo[L - 1],2,0,1.0);
    insert_Sz(mpo[L - 1],3,0,1.0);
    insert_Sz(mpo[L - 1],4,0,B);
-/*
-   //merge everything together
-   TVector<Qshapes<Q>,1> qmerge;
-   TVector<Dshapes,1> dmerge;
 
-   qmerge[0] = mpo[0].qshape(3);
-   dmerge[0] = mpo[0].dshape(3);
+   return mpo;
 
-   QSTmergeInfo<1> info(qmerge,dmerge);
+}
 
-   QSTArray< complex<double> ,4,Q> tmp;
-   QSTmerge(mpo[0],info,tmp);
+template<class Q>
+MPO<complex<double>,Q> afmpo(int d,int k,int r,const ZArray<2> &V){
 
-   mpo[0] = tmp;
+   int L = V.shape(1);
 
+   MPO<complex<double>,Q> mpo(L);
+
+   //physical indices
+   Qshapes<Q> qp;
+
+   for(int i = 0;i < d;++i)
+      qp.push_back(Q::zero());
+
+   Qshapes<Q> qz;
+   qz.push_back(Q::zero());
+
+   Qshapes<Q> qi;
+   Qshapes<Q> qo;
+
+   for(int i = 0;i < 2;++i)
+      qo.push_back(Q::zero());
+
+   //initialize the quantumnumbers of the MPO<Q>
+   mpo[0].resize(Q::zero(),make_array(qz,qp,-qp,qo));
+
+   //set the input: first site
+   insert_id(mpo[0],0,0,1.0);
+
+   if(r == 0)
+      insert_Sx(mpo[0],0,1,V(k,0));
+   else if(r == 1)
+      insert_Sy(mpo[0],0,1,V(k,0));
+   else
+      insert_Sz(mpo[0],0,1,V(k,0));
+
+   //middle sites
    for(int i = 1;i < L - 1;++i){
 
-   //first merge the row
-   qmerge[0] = mpo[i].qshape(0);
-   dmerge[0] = mpo[i].dshape(0);
+      mpo[i].resize(Q::zero(),make_array(-qo,qp,-qp,qo));
 
-   info.reset(qmerge,dmerge);
+      //first row
+      insert_id(mpo[i],0,0,1.0);
 
-   tmp.clear();
+      if(r == 0)
+         insert_Sx(mpo[i],0,1,V(k,i));
+      else if(r == 1)
+         insert_Sy(mpo[i],0,1,V(k,i));
+      else
+         insert_Sz(mpo[i],0,1,V(k,i));
 
-   QSTmerge(info,mpo[i],tmp);
-
-   //then merge the column
-   qmerge[0] = tmp.qshape(3);
-   dmerge[0] = tmp.dshape(3);
-
-   info.reset(qmerge,dmerge);
-
-   mpo[i].clear();
-
-   QSTmerge(tmp,info,mpo[i]);
+      //closed column
+      insert_id(mpo[i],1,1,1.0);
 
    }
 
-   //only merge row for i = L - 1
-   qmerge[0] = mpo[L - 1].qshape(0);
-   dmerge[0] = mpo[L - 1].dshape(0);
+   //last site
+   mpo[L-1].resize(Q::zero(),make_array(-qo,qp,-qp,qz));
 
-   info.reset(qmerge,dmerge);
+   if(r == 0)
+      insert_Sx(mpo[L - 1],0,0,V(k,L - 1));
+   else if(r == 1)
+      insert_Sy(mpo[L - 1],0,0,V(k,L - 1));
+   else
+      insert_Sz(mpo[L - 1],0,0,V(k,L - 1));
 
-   tmp.clear();
+   //finally
+   insert_id(mpo[L - 1],1,0,1.0);
 
-   QSTmerge(info,mpo[L - 1],tmp);
-
-   mpo[L - 1] = tmp;
-    */
    return mpo;
 
 }
 
 template void physical<Quantum>(int d,Qshapes<Quantum> &,Dshapes &dp);
 template MPO<complex<double>,Quantum> heisenberg<Quantum>(int d,const DArray<2> &,double B);
+template MPO<complex<double>,Quantum> afmpo<Quantum>(int d,int k,int r,const ZArray<2> &V);

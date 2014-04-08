@@ -14,7 +14,9 @@ CPPSRC	= qmc_btas.cpp\
            Coupling.cpp\
            Trotter.cpp\
            Walker.cpp\
-           Tools.cpp
+           Tools.cpp\
+           Propagator.cpp\
+           AFQMC.cpp
 
 
 OBJ	= $(CPPSRC:.cpp=.o)
@@ -35,14 +37,14 @@ INCLUDE = ./include $(BTASINC) $(MPSINC)
 
 LIBS= -lpthread -lmkl_intel_lp64 -lmkl_sequential -lmkl_core $(BOOSTLIB) $(BTASLIB)/libbtas.a 
 
-CC	= gcc
-CXX	= g++
+CC	= icc
+CXX	= icpc
 
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
-CFLAGS	= -I$(INCLUDE) -g -std=c++11 -D_SERIAL -D_HAS_CBLAS -D_HAS_INTEL_MKL 
-LDFLAGS	= -g -std=c++11
+CFLAGS	= -I$(INCLUDE) -std=c++11 -D_SERIAL -D_HAS_CBLAS -D_HAS_INTEL_MKL -O3 -ipo -openmp
+LDFLAGS	= -std=c++11 -O3 -ipo -openmp
 
 # =============================================================================
 #   Targets & Rules

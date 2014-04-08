@@ -11,6 +11,8 @@ using std::complex;
 
 namespace Tools {
 
+   static Random RN;
+
    //function which generates random complex numbers uniformly on a square of side 2
    complex<double> rgen_complex(); 
 

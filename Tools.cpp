@@ -11,9 +11,6 @@ using std::ifstream;
 
 namespace Tools {
 
-   //!A random object: to be used globally
-   Random RN;
-
    //!function which generates random complex numbers uniformly on a square of side 2
    complex<double> rgen_complex(){ 
 

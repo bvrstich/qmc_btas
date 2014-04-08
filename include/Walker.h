@@ -13,6 +13,7 @@ using std::vector;
 namespace btas { typedef SpinQuantum Quantum; }; 
 
 #include "MPSblas.h"
+#include "Propagator.h"
 
 using namespace btas;
 using namespace mpsxx;
@@ -56,7 +57,15 @@ class Walker {
       complex<double> gEL() const;
 
       const std::vector< complex<double> > &gVL() const;
-      
+
+      complex<double> gVL(int,int) const;
+
+      void multWeight(double);
+
+      void sWeight(double);
+
+      void propagate(const Propagator &P);
+ 
    private:
    
       //The MPS state
