@@ -427,7 +427,7 @@ MPO<complex<double>,Q> heisenberg(bool merge,const DArray<2> &J,double B){
       qmerge[0] = mpo[0].qshape(3);
       dmerge[0] = mpo[0].dshape(3);
 
-      QSTmergeInfo<1> info(qmerge,dmerge);
+      QSTmergeInfo<1,Q> info(qmerge,dmerge);
 
       QSTArray< complex<double> ,4,Q> tmp;
       QSTmerge(mpo[0],info,tmp);

@@ -10,7 +10,9 @@
 BINNAME = qmc_btas
 CPPSRC	= qmc_btas.cpp\
            Random.cpp\
-           SpinHamiltonian.cpp
+           SpinHamiltonian.cpp\
+           Coupling.cpp\
+           Tools.cpp
 
 
 OBJ	= $(CPPSRC:.cpp=.o)
@@ -38,7 +40,7 @@ CXX	= g++
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
-CFLAGS	= -I$(INCLUDE) -std=c++11 -g -D_HAS_CBLAS -D_HAS_INTEL_MKL
+CFLAGS	= -I$(INCLUDE) -std=c++11 -g -D_HAS_CBLAS -D_HAS_LAPACKE
 LDFLAGS	= -g 
 
 # =============================================================================
