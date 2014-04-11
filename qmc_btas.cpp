@@ -41,8 +41,11 @@ int main(int argc,char *argv[]){
    Walker walker(L,d,1.0,L);
    walker.fill_Random();
 
-   //overlap
-   cout << walker.calc_overlap(mps) << endl;
+   double dtau = 0.01;
+
+   Trotter trotter(d,J,dtau);
+
+   walker.sVL(trotter,mps);
 
    return 0;
 

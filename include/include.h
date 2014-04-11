@@ -26,3 +26,5 @@
 #include "coupling.h"
 #include "compress.h"
 #include "Walker.h"
+#include "Trotter.h"
+#include "Propagator.h"

@@ -32,16 +32,17 @@ class Trotter {
 
       int gd() const;
 
-      const MPO<complex<double>,Quantum> &gV_op(int,int) const;
+      const ZArray<2> &gMx(int) const;
 
-      void fill_prop(MPO<complex<double>,Quantum> &P,int k,int r,complex<double> x);
+      const ZArray<2> &gMy(int) const;
 
-      const QSZArray<2,Quantum> &gMx(int) const;
+      const ZArray<2> &gMz(int) const;
 
-      const QSZArray<2,Quantum> &gMy(int) const;
+      const ZArray<2> &gSx() const;
 
-      const QSZArray<2,Quantum> &gMz(int) const;
+      const ZArray<2> &gSy() const;
 
+      const ZArray<2> &gSz() const;
 
    private:
    
@@ -54,9 +55,6 @@ class Trotter {
       //!physical dimension
       int d;
 
-      //!mpo's corresponding to the auxiliary field operators
-      std::vector< MPO<complex<double>,Quantum > > V_op;
-
       //!the number of non-zero eigenvalues of the coupling matrix: equals the number of trotter product terms
       int n_trot;
 
@@ -64,13 +62,18 @@ class Trotter {
       double dtau;
 
       //!eigenvector of Sx |Sx><Sx|
-      std::vector< QSZArray<2,Quantum> > Mx;
+      std::vector< ZArray<2> > Mx;
       
       //!eigenvector of Sy |Sy><Sy|
-      std::vector< QSZArray<2,Quantum> > My;
+      std::vector< ZArray<2> > My;
 
       //!eigenvector of Sz |Sz><Sz|
-      std::vector< QSZArray<2,Quantum> > Mz;
+      std::vector< ZArray<2> > Mz;
+
+      //!Sx matrix
+      ZArray<2> Sx;
+      ZArray<2> Sy;
+      ZArray<2> Sz;
 
 };
 

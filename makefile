@@ -14,7 +14,9 @@ CPPSRC	= qmc_btas.cpp\
            coupling.cpp\
            Global.cpp\
            MPS.cpp\
-           Walker.cpp
+           Walker.cpp\
+           Trotter.cpp\
+           Propagator.cpp
 
 
 OBJ	= $(CPPSRC:.cpp=.o)

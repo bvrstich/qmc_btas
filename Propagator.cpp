@@ -19,7 +19,7 @@ using std::complex;
  * standard constructor: sets the size of vector, and initializes the QSZArray objects to the correct quantumnumbers and dimensions
  * @param L size
  */
-Propagator::Propagator(int L_in,int d_in) : vector< QSZArray<2,Quantum> > (L_in) {
+Propagator::Propagator(int L_in,int d_in) : vector< ZArray<2> > (L_in) {
 
    L = L_in;
    d = d_in;
@@ -28,19 +28,8 @@ Propagator::Propagator(int L_in,int d_in) : vector< QSZArray<2,Quantum> > (L_in)
    k = 0;
    r = 0;
   
-   //physical indices
-   Qshapes<Quantum> qp;
-
-   for(int i = 0;i < d;++i)
-      qp.push_back(Quantum::zero());
-
-   Dshapes dp;
-
-   for(int i = 0;i < d;++i)
-      dp.push_back(1);
-
    for(int i = 0;i < L;++i)
-      (*this)[i].resize(Quantum::zero(),make_array(qp,-qp),make_array(dp,dp));
+      (*this)[i].resize(d,d);
  
 }
 
@@ -48,7 +37,7 @@ Propagator::Propagator(int L_in,int d_in) : vector< QSZArray<2,Quantum> > (L_in)
  * copy constructor
  * @param prop_copy input Propagator object
  */
-Propagator::Propagator(const Propagator &prop_copy) : vector< QSZArray<2,Quantum> > (prop_copy) {
+Propagator::Propagator(const Propagator &prop_copy) : vector< ZArray<2> > (prop_copy) {
 
    L = prop_copy.gL();
    d = prop_copy.gd();

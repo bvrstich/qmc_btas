@@ -11,6 +11,9 @@ using std::vector;
 
 using namespace btas;
 
+class Propagator;
+class Trotter;
+
 /**
  * class definition of Walker, made to describe the product state walkers. An array of L size-2 vector. Each site represents a rotation of the spin.
  */
@@ -41,27 +44,30 @@ class Walker : public vector< ZArray<1> > {
 
       complex<double> gVL(int,int) const;
 
+      const std::vector< std::vector< complex<double> > > &gauxvec() const;
+
       void fill_Random();
 
       complex<double> calc_overlap(const MPS< complex<double> > &mps) const;
 
-/*
+      void propagate(const Propagator &P);
+
+      void normalize();
+
       //Set the overlap with the trial wfn
-      void sOverlap(const MPS<complex<double>,Quantum> &Psi0);
+      void sOverlap(const MPS< complex<double> > &Psi0);
 
-      void sEL(const MPO<complex<double>,Quantum> &O,const MPS<complex<double>,Quantum> &Psi0);
-
-      void sEL(complex<double> );
-
-      void sVL(const Trotter &trotter,const MPS<complex<double>,Quantum> &Psi0);
+      void sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0);
 
       void multWeight(double);
 
       void sWeight(double);
+ 
+      void sEL(complex<double> );
 
-      void propagate(const Propagator &P);
-*/ 
-   private:
+     //void sEL(const MPO<complex<double>,Quantum> &O,const MPS<complex<double>,Quantum> &Psi0);
+
+  private:
    
       //nr of trotter terms
       int n_trot;
@@ -74,6 +80,9 @@ class Walker : public vector< ZArray<1> > {
 
       //!local auxiliary operators: <PsiT|v|phi>/<PsiT|phi>
       std::vector< complex<double> > VL;
+
+      //!intermediate storage for calculation of auxiliary operator expectation values
+      std::vector< std::vector< complex<double> > > auxvec;
       
       //The walker weight
       double weight;

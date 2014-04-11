@@ -56,90 +56,69 @@ Trotter::Trotter(int d_in,const DArray<2> &J,double dtau){
 
    }
 
-   //make the af operators
-   V_op.resize(3*n_trot);
-
-   for(int r = 0;r < 3;++r)
-      for(int k = 0;k < n_trot;++k)
-         V_op[r*n_trot + k] = afmpo<Quantum>(d,k,r,V);
-
-   //fill the Sx,Sy and Sz eigenvector matrices
-
-   Qshapes<Quantum> qp;
-
-   for(int i = 0;i < d;++i)
-      qp.push_back(Quantum::zero());
-
-   Dshapes dp;
-
-   for(int i = 0;i < d;++i)
-      dp.push_back(1);
-
-   ZArray<2> S(d,d);
-
    //Sx
-   S(0,0) = complex<double>(0.0,0.0);
-   S(0,1) = complex<double>(0.5,0.0);
-   S(1,0) = complex<double>(0.5,0.0);
-   S(1,1) = complex<double>(0.0,0.0);
+   Sx.resize(d,d);
+
+   Sx(0,0) = complex<double>(0.0,0.0);
+   Sx(0,1) = complex<double>(0.5,0.0);
+   Sx(1,0) = complex<double>(0.5,0.0);
+   Sx(1,1) = complex<double>(0.0,0.0);
 
    DArray<1> eig;
    ZArray<2> U;
 
-   Heev('V', 'U', S, eig, U);
+   Heev('V', 'U', Sx, eig, U);
 
    Mx.resize(d);
 
    for(int i = 0;i < d;++i){
 
-      Mx[i].resize(Quantum::zero(),make_array(qp,-qp),make_array(dp,dp));
+      Mx[i].resize(d,d);
 
       for(int j = 0;j < d;++j)
-         for(int k = 0;k < d;++k){
-
-            QSZArray<2,Quantum>::iterator it = Mx[i].find(shape(j,k));
-
-            (*it->second)(0,0) = U(i,j) * std::conj(U(i,k));
-
-         }
+         for(int k = 0;k < d;++k)
+            Mx[i](j,k) = U(i,j) * std::conj(U(i,k));
 
    }
 
    //Sy
-   S(0,0) = complex<double>(0.0,0.0);
-   S(0,1) = complex<double>(0.0,0.5);
-   S(1,0) = complex<double>(0.0,-0.5);
-   S(1,1) = complex<double>(0.0,0.0);
+   Sy.resize(d,d);
 
-   Heev('V', 'U', S, eig, U);
+   Sy(0,0) = complex<double>(0.0,0.0);
+   Sy(0,1) = complex<double>(0.0,0.5);
+   Sy(1,0) = complex<double>(0.0,-0.5);
+   Sy(1,1) = complex<double>(0.0,0.0);
+
+   Heev('V', 'U', Sy, eig, U);
 
    My.resize(d);
 
    for(int i = 0;i < d;++i){
 
-      My[i].resize(Quantum::zero(),make_array(qp,-qp),make_array(dp,dp));
+      My[i].resize(d,d);
 
       for(int j = 0;j < d;++j)
-         for(int k = 0;k < d;++k){
-
-            QSZArray<2,Quantum>::iterator it = My[i].find(shape(j,k));
-
-            (*it->second)(0,0) = U(i,j) * std::conj(U(i,k));
-
-         }
+         for(int k = 0;k < d;++k)
+            My[i](j,k) = U(i,j) * std::conj(U(i,k));
 
    }
 
    //Sz
+   Sz.resize(d,d);
+
+   Sz(0,0) = complex<double>(-0.5,0.0);
+   Sz(0,1) = complex<double>(0.0,0.0);
+   Sz(1,0) = complex<double>(0.0,0.0);
+   Sz(1,1) = complex<double>(0.5,0.0);
+
    Mz.resize(d);
 
    for(int i = 0;i < d;++i){
 
-      Mz[i].resize(Quantum::zero(),make_array(qp,-qp),make_array(dp,dp));
+      Mz[i].resize(d,d);
+      Mz[i] = 0.0;
 
-      QSZArray<2,Quantum>::iterator it = Mz[i].find(shape(i,i));
-
-      (*it->second)(0,0) = 1.0;
+      Mz[i](i,i) = 1.0;
 
    }
 
@@ -156,13 +135,6 @@ Trotter::Trotter(const Trotter &trot_copy){
    L = trot_copy.gL();
    d = trot_copy.gd();
 
-   //make the af operators
-   V_op.resize(3*n_trot);
-
-   for(int r = 0;r < 3;++r)
-      for(int k = 0;k < n_trot;++k)
-         V_op[r*n_trot + k] = trot_copy.gV_op(k,r);
-
    Mx.resize(d);
    My.resize(d);
    Mz.resize(d);
@@ -174,6 +146,10 @@ Trotter::Trotter(const Trotter &trot_copy){
       Mz[i] = trot_copy.gMz(i);
 
    }
+
+   Sx = trot_copy.gSx();
+   Sy = trot_copy.gSy();
+   Sz = trot_copy.gSz();
 
 }
 
@@ -197,15 +173,6 @@ double Trotter::gdtau() const {
 const ZArray<2> &Trotter::gV() const {
 
    return V;
-
-}
-
-/**
- * @return the auxiliary field matrix
- */
-const MPO<complex<double>,Quantum> &Trotter::gV_op(int k,int r) const {
-
-   return V_op[r*n_trot + k];
 
 }
 
@@ -239,7 +206,7 @@ int Trotter::gd() const {
 /**
  * @return the eigenvector 'matrix' |Sx><Sx| corresponding to the i'th eigenvalue ranked from small to large 
  */
-const QSZArray<2,Quantum> &Trotter::gMx(int i) const {
+const ZArray<2> &Trotter::gMx(int i) const {
 
    return Mx[i];
 
@@ -248,7 +215,7 @@ const QSZArray<2,Quantum> &Trotter::gMx(int i) const {
 /**
  * @return the eigenvector 'matrix' |Sy><Sy| corresponding to the i'th eigenvalue ranked from small to large 
  */
-const QSZArray<2,Quantum> &Trotter::gMy(int i) const {
+const ZArray<2> &Trotter::gMy(int i) const {
 
    return My[i];
 
@@ -257,8 +224,36 @@ const QSZArray<2,Quantum> &Trotter::gMy(int i) const {
 /**
  * @return the eigenvector 'matriz' |Sz><Sz| corresponding to the i'th eigenvalue ranked from small to large 
  */
-const QSZArray<2,Quantum> &Trotter::gMz(int i) const {
+const ZArray<2> &Trotter::gMz(int i) const {
 
    return Mz[i];
+
+}
+
+/**
+ * @return the Sx operator
+ */
+const ZArray<2> &Trotter::gSx() const {
+
+   return Sx;
+
+}
+
+/**
+ * @return the Sy operator
+ */
+const ZArray<2> &Trotter::gSy() const {
+
+   return Sy;
+
+}
+
+
+/**
+ * @return the Sz operator
+ */
+const ZArray<2> &Trotter::gSz() const {
+
+   return Sz;
 
 }
