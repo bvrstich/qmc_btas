@@ -19,42 +19,31 @@ namespace btas { typedef SpinQuantum Quantum; }; // Defined as default quantum n
 #include "include.h"
 
 using namespace btas;
-using namespace mpsxx;
-using namespace Tools;
 
 int main(int argc,char *argv[]){
 
    cout.precision(15);
    srand(time(NULL));
 
-   int L = 16;
-   int d = 2;
-
-   int DW = 4;
+   int L = atoi(argv[1]);
+   int d = atoi(argv[2]);
+   int D = atoi(argv[3]);
 
    //coupling matrix:
    DArray<2> J(L,L);
    coupling::J1J2_2D(true,0.0,J);
 
-   //hamiltonian
-   MPO<complex<double>,Quantum> ham = heisenberg<Quantum>(d,J,0.0);
+   char filename[200];
+   sprintf(filename,"/home/bright/bestanden/programmas/dmrg/J1J2/4x4/J2=0.0/Psi0/DT=%d.mps",D);
 
-   //make the trotter
-   double dtau = 0.01;
-   Trotter trotter(d,J,dtau);
+   MPS< complex<double> > mps(filename);
 
-   MPS<complex<double>,Quantum> Psi0;
-   Tools::read(Psi0,"/home/bright/bestanden/programmas/dmrg/J1J2/4x4/J2=0.0/Psi0/DT=256.mps");
+   Walker walker(L,d,1.0,L);
+   walker.fill_Random();
 
-   cout << inprod(mpsxx::Left,Psi0,ham,Psi0) << endl;
-/*
-   //read in trial wavefunction
-   int nwalkers = 1000;
+   //overlap
+   cout << walker.calc_overlap(mps) << endl;
 
-   AFQMC afqmc(ham,trotter,Psi0,DW,nwalkers,dtau);
-
-   afqmc.Walk(1);
-*/
    return 0;
 
 }

@@ -1,6 +1,4 @@
 //nog enkele definities:
-#include "SpinQuantum.h"
-namespace btas { typedef SpinQuantum Quantum; };
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -20,20 +18,11 @@ namespace btas { typedef SpinQuantum Quantum; };
 #include <btas/DENSE/DArray.h>
 #include <btas/DENSE/ZArray.h>
 
-#include <btas/SPARSE/STConj.h>
-
-#include <btas/QSPARSE/QSTArray.h>
-#include <btas/QSPARSE/QSTLAPACK.h>
-
 #include <btas/QSPARSE/QSZArray.h>
 
-#include <MPSblas.h>
-
 #include "Random.h"
-#include "SpinHamiltonian.h"
-#include "Coupling.h"
-#include "Trotter.h"
+#include "Global.h"
+#include "MPS.h"
+#include "coupling.h"
+#include "compress.h"
 #include "Walker.h"
-#include "Tools.h"
-#include "AFQMC.h"
-#include "Propagator.h"

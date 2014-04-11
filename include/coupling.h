@@ -6,7 +6,6 @@
 #include <complex>
 
 using namespace btas;
-using namespace mpsxx;
 using std::complex;
 
 namespace coupling {

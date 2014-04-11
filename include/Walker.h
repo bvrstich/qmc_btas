@@ -9,48 +9,29 @@
 using std::complex;
 using std::vector;
 
-#include "SpinQuantum.h"
-namespace btas { typedef SpinQuantum Quantum; }; 
-
-#include "MPSblas.h"
-#include "Propagator.h"
-
 using namespace btas;
-using namespace mpsxx;
 
-class Trotter;
-
-class Walker {
+/**
+ * class definition of Walker, made to describe the product state walkers. An array of L size-2 vector. Each site represents a rotation of the spin.
+ */
+class Walker : public vector< ZArray<1> > {
 
    public:
    
       //Constructor copying an MPSstate
-      Walker(const MPS<complex<double>,Quantum> &, double weight,int n_trot);
+      Walker(int,int,double weight,int n_trot);
       
       //Constructor copying an entire Walker
       Walker(const Walker &walker);
       
       //Destructor
       virtual ~Walker();
-      
+
       //Return the walker weight
       double gWeight() const;
       
       //Return the walker overlap
       complex<double> gOverlap() const;
-
-      const MPS<complex<double>,Quantum> &gPsiW() const;
-
-      MPS<complex<double>,Quantum> &gPsiW();
-
-      //Set the overlap with the trial wfn
-      void sOverlap(const MPS<complex<double>,Quantum> &Psi0);
-
-      void sEL(const MPO<complex<double>,Quantum> &O,const MPS<complex<double>,Quantum> &Psi0);
-
-      void sEL(complex<double> );
-
-      void sVL(const Trotter &trotter,const MPS<complex<double>,Quantum> &Psi0);
 
       int gn_trot() const;
 
@@ -60,17 +41,28 @@ class Walker {
 
       complex<double> gVL(int,int) const;
 
+      void fill_Random();
+
+      complex<double> calc_overlap(const MPS< complex<double> > &mps) const;
+
+/*
+      //Set the overlap with the trial wfn
+      void sOverlap(const MPS<complex<double>,Quantum> &Psi0);
+
+      void sEL(const MPO<complex<double>,Quantum> &O,const MPS<complex<double>,Quantum> &Psi0);
+
+      void sEL(complex<double> );
+
+      void sVL(const Trotter &trotter,const MPS<complex<double>,Quantum> &Psi0);
+
       void multWeight(double);
 
       void sWeight(double);
 
       void propagate(const Propagator &P);
- 
+*/ 
    private:
    
-      //The MPS state
-      MPS<complex<double>,Quantum> PsiW;
-
       //nr of trotter terms
       int n_trot;
       
