@@ -38,12 +38,12 @@ int main(int argc,char *argv[]){
 
    MPS< complex<double> > mps(filename);
 
-   Walker walker(L,d,1.0,L);
-   walker.fill_Random();
-
-   double dtau = 0.01;
+      double dtau = 0.01;
 
    Trotter trotter(d,J,dtau);
+
+   Walker walker(L,d,1.0,trotter.gn_trot());
+   walker.fill_Random();
 
    walker.sVL(trotter,mps);
 

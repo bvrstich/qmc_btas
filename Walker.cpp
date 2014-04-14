@@ -28,9 +28,9 @@ Walker::Walker(int L,int d,double weight,int n_trot) : std::vector< ZArray<1> >(
 
    VL.resize(3*n_trot);
 
-   auxvec.resize(n_trot);
+   auxvec.resize(L);
 
-   for(int i = 0;i < n_trot;++i)//for x,y and z components
+   for(int i = 0;i < L;++i)//for x,y and z components
       auxvec[i].resize(3);
 
 }
@@ -277,7 +277,7 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
 
    }
 
-   //last site = 0
+   //last site = L-1
 
    //x
    Gemv(CblasNoTrans,one,trotter.gSx(),(*this)[L - 1],zero,vec);
@@ -304,6 +304,15 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
    auxvec[L - 1][2] = Dot(tmp,ro[L - 2]);
 
    //Done with the Sx, Sy and Sz on every site: ready to construct auxiliary expectation values quickly!
+   for(int k = 0;k < n_trot;++k)
+      for(int r = 0;r < 3;++r){
+
+         VL[r*n_trot + k] = auxvec[0][r] * trotter.gV()(k,0);
+
+         for(int i = 1;i < L;++i)
+            VL[r*n_trot + k] += auxvec[i][r] * trotter.gV()(k,i);
+
+      }
 
 }
 
