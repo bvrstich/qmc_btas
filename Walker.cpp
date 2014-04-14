@@ -26,6 +26,17 @@ Walker::Walker(int L,int d,double weight,int n_trot) : std::vector< ZArray<1> >(
    for(int i = 0;i < L;++i)
       (*this)[i].resize(d);
 
+   Vxyz.resize(L);
+
+   for(int i = 0;i < L;++i){
+
+      Vxyz[i].resize(3);//three direction x,y,z
+
+      for(int r = 0;r < 3;++r)//regular vector
+         Vxyz[i][r].resize(d);
+
+   }
+
    VL.resize(3*n_trot);
 
    auxvec.resize(L);
@@ -197,34 +208,15 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
 
    }
 
-   //now fill the auxvec
-   ZArray<1> vec(d);
-
    //first site = 0
+   for(int r = 0;r < 3;++r){
 
-   //x
-   Gemv(CblasNoTrans,one,trotter.gSx(),(*this)[0],zero,vec);
+      tmp.clear();
+      Gemv(CblasTrans,one,Psi0[0],Vxyz[0][r],zero,tmp);
 
-   tmp.clear();
-   Gemv(CblasTrans,one,Psi0[0],vec,zero,tmp);
+      auxvec[0][r] = Dot(tmp,ro[0]);
 
-   auxvec[0][0] = Dot(tmp,ro[0]);
-
-   //y
-   Gemv(CblasNoTrans,one,trotter.gSy(),(*this)[0],zero,vec);
-
-   tmp.clear();
-   Gemv(CblasTrans,one,Psi0[0],vec,zero,tmp);
-
-   auxvec[0][1] = Dot(tmp,ro[0]);
-
-   //z
-   Gemv(CblasNoTrans,one,trotter.gSz(),(*this)[0],zero,vec);
-
-   tmp.clear();
-   Gemv(CblasTrans,one,Psi0[0],vec,zero,tmp);
-
-   auxvec[0][2] = Dot(tmp,ro[0]);
+   }
 
    //make the left operator
    ro[0].clear();
@@ -235,38 +227,17 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
    //calculate auxvec for middle sites
    for(int i = 1;i < L - 1;++i){
 
-      //x
-      Gemv(CblasNoTrans,one,trotter.gSx(),(*this)[i],zero,vec);
+      for(int r = 0;r < 3;++r){
 
-      tmp.clear();
-      Gemv(CblasTrans,one,Psi0[i],vec,zero,tmp);
+         tmp.clear();
+         Gemv(CblasTrans,one,Psi0[i],Vxyz[i][r],zero,tmp);
 
-      tmp2.clear();
-      Gemm(CblasNoTrans,CblasNoTrans,one,ro[i - 1],tmp,zero,tmp2);
+         tmp2.clear();
+         Gemm(CblasNoTrans,CblasNoTrans,one,ro[i - 1],tmp,zero,tmp2);
 
-      auxvec[i][0] = Dot(tmp2,ro[i]);
+         auxvec[i][r] = Dot(tmp2,ro[i]);
 
-      //y
-      Gemv(CblasNoTrans,one,trotter.gSy(),(*this)[i],zero,vec);
-
-      tmp.clear();
-      Gemv(CblasTrans,one,Psi0[i],vec,zero,tmp);
-
-      tmp2.clear();
-      Gemm(CblasNoTrans,CblasNoTrans,one,ro[i - 1],tmp,zero,tmp2);
-
-      auxvec[i][1] = Dot(tmp2,ro[i]);
-
-      //z
-      Gemv(CblasNoTrans,one,trotter.gSz(),(*this)[i],zero,vec);
-
-      tmp.clear();
-      Gemv(CblasTrans,one,Psi0[i],vec,zero,tmp);
-
-      tmp2.clear();
-      Gemm(CblasNoTrans,CblasNoTrans,one,ro[i - 1],tmp,zero,tmp2);
-
-      auxvec[i][2] = Dot(tmp2,ro[i]);
+      }
 
       //make the left operator
       tmp.clear();
@@ -280,28 +251,14 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
    //last site = L-1
 
    //x
-   Gemv(CblasNoTrans,one,trotter.gSx(),(*this)[L - 1],zero,vec);
+   for(int r = 0;r < 3;++r){
 
-   tmp.clear();
-   Gemv(CblasTrans,one,Psi0[L - 1],vec,zero,tmp);
+      tmp.clear();
+      Gemv(CblasTrans,one,Psi0[L - 1],Vxyz[L - 1][r],zero,tmp);
 
-   auxvec[L - 1][0] = Dot(tmp,ro[L - 2]);
+      auxvec[L - 1][r] = Dot(tmp,ro[L - 2]);
 
-   //y
-   Gemv(CblasNoTrans,one,trotter.gSy(),(*this)[L - 1],zero,vec);
-
-   tmp.clear();
-   Gemv(CblasTrans,one,Psi0[L - 1],vec,zero,tmp);
-
-   auxvec[L - 1][1] = Dot(tmp,ro[L - 2]);
-
-   //z
-   Gemv(CblasNoTrans,one,trotter.gSz(),(*this)[L - 1],zero,vec);
-
-   tmp.clear();
-   Gemv(CblasTrans,one,Psi0[L - 1],vec,zero,tmp);
-
-   auxvec[L - 1][2] = Dot(tmp,ro[L - 2]);
+   }
 
    //Done with the Sx, Sy and Sz on every site: ready to construct auxiliary expectation values quickly!
    for(int k = 0;k < n_trot;++k)
@@ -400,3 +357,23 @@ void Walker::normalize(){
 
    }
  */
+
+/**
+ * fill the Sx,Sy and Sz rotated walker vectors
+ */
+void Walker::fill_xyz() {
+
+   complex<double> one(1.0,0.0);
+   complex<double> zero(0.0,0.0);
+
+   int L = this->size();
+
+   for(int i = 0;i < L;++i){
+
+      Gemv(CblasNoTrans,one,Heisenberg::gSx(),(*this)[i],zero,Vxyz[i][0]);
+      Gemv(CblasNoTrans,one,Heisenberg::gSy(),(*this)[i],zero,Vxyz[i][1]);
+      Gemv(CblasNoTrans,one,Heisenberg::gSz(),(*this)[i],zero,Vxyz[i][2]);
+
+   }
+
+}

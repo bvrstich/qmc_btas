@@ -38,12 +38,6 @@ class Trotter {
 
       const ZArray<2> &gMz(int) const;
 
-      const ZArray<2> &gSx() const;
-
-      const ZArray<2> &gSy() const;
-
-      const ZArray<2> &gSz() const;
-
    private:
    
       //The chain length
@@ -69,11 +63,6 @@ class Trotter {
 
       //!eigenvector of Sz |Sz><Sz|
       std::vector< ZArray<2> > Mz;
-
-      //!Sx matrix
-      ZArray<2> Sx;
-      ZArray<2> Sy;
-      ZArray<2> Sz;
 
 };
 

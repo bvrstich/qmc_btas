@@ -28,3 +28,4 @@
 #include "Walker.h"
 #include "Trotter.h"
 #include "Propagator.h"
+#include "Heisenberg.h"

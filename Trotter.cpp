@@ -57,17 +57,10 @@ Trotter::Trotter(int d_in,const DArray<2> &J,double dtau){
    }
 
    //Sx
-   Sx.resize(d,d);
-
-   Sx(0,0) = complex<double>(0.0,0.0);
-   Sx(0,1) = complex<double>(0.5,0.0);
-   Sx(1,0) = complex<double>(0.5,0.0);
-   Sx(1,1) = complex<double>(0.0,0.0);
-
    DArray<1> eig;
    ZArray<2> U;
 
-   Heev('V', 'U', Sx, eig, U);
+   Heev('V', 'U', Heisenberg::gSx(), eig, U);
 
    Mx.resize(d);
 
@@ -82,14 +75,7 @@ Trotter::Trotter(int d_in,const DArray<2> &J,double dtau){
    }
 
    //Sy
-   Sy.resize(d,d);
-
-   Sy(0,0) = complex<double>(0.0,0.0);
-   Sy(0,1) = complex<double>(0.0,0.5);
-   Sy(1,0) = complex<double>(0.0,-0.5);
-   Sy(1,1) = complex<double>(0.0,0.0);
-
-   Heev('V', 'U', Sy, eig, U);
+   Heev('V', 'U', Heisenberg::gSy(), eig, U);
 
    My.resize(d);
 
@@ -104,13 +90,6 @@ Trotter::Trotter(int d_in,const DArray<2> &J,double dtau){
    }
 
    //Sz
-   Sz.resize(d,d);
-
-   Sz(0,0) = complex<double>(-0.5,0.0);
-   Sz(0,1) = complex<double>(0.0,0.0);
-   Sz(1,0) = complex<double>(0.0,0.0);
-   Sz(1,1) = complex<double>(0.5,0.0);
-
    Mz.resize(d);
 
    for(int i = 0;i < d;++i){
@@ -146,10 +125,6 @@ Trotter::Trotter(const Trotter &trot_copy){
       Mz[i] = trot_copy.gMz(i);
 
    }
-
-   Sx = trot_copy.gSx();
-   Sy = trot_copy.gSy();
-   Sz = trot_copy.gSz();
 
 }
 
@@ -222,38 +197,10 @@ const ZArray<2> &Trotter::gMy(int i) const {
 }
 
 /**
- * @return the eigenvector 'matriz' |Sz><Sz| corresponding to the i'th eigenvalue ranked from small to large 
+ * @return the eigenvector 'matrix' |Sz><Sz| corresponding to the i'th eigenvalue ranked from small to large 
  */
 const ZArray<2> &Trotter::gMz(int i) const {
 
    return Mz[i];
-
-}
-
-/**
- * @return the Sx operator
- */
-const ZArray<2> &Trotter::gSx() const {
-
-   return Sx;
-
-}
-
-/**
- * @return the Sy operator
- */
-const ZArray<2> &Trotter::gSy() const {
-
-   return Sy;
-
-}
-
-
-/**
- * @return the Sz operator
- */
-const ZArray<2> &Trotter::gSz() const {
-
-   return Sz;
 
 }

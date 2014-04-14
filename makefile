@@ -16,7 +16,8 @@ CPPSRC	= qmc_btas.cpp\
            MPS.cpp\
            Walker.cpp\
            Trotter.cpp\
-           Propagator.cpp
+           Propagator.cpp\
+           Heisenberg.cpp
 
 
 OBJ	= $(CPPSRC:.cpp=.o)
