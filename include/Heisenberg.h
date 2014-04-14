@@ -15,7 +15,7 @@
 class Heisenberg {
 
    public:
-   
+
       //Constructor
       static void init(int,const DArray<2> &J);
 
@@ -24,6 +24,8 @@ class Heisenberg {
       static const ZArray<2> &gSy();
 
       static const ZArray<2> &gSz();
+
+      static complex<double> energy(const MPS< complex<double> > &,const Walker &);
 
    private:
 
@@ -35,10 +37,10 @@ class Heisenberg {
 
       //!bookkeeping, site interactions going out
       static std::vector< std::vector<int> > out;
-   
+
       //The chain length
       static int L;
-      
+
       //!physical dimension
       static int d;
 
@@ -50,6 +52,18 @@ class Heisenberg {
 
       //!Sz matrix
       static ZArray<2> Sz;
+
+      //!number of operators required on site
+      static vector<int> no;
+
+      //!type of the different operators required on site
+      static vector< vector<int> > to;
+
+      //!number of connecting sites to the right of this site with this operator
+      static vector< vector<int> > nc;
+
+      //!the max number of operators
+      static int max_ro;
 
 };
 

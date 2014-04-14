@@ -28,7 +28,7 @@ int main(int argc,char *argv[]){
 
    //coupling matrix:
    DArray<2> J(L,L);
-   coupling::J1J2_2D(true,0.0,J);
+   coupling::J1J2_2D(false,0.5,J);
 
    Heisenberg::init(d,J);
 
@@ -46,6 +46,7 @@ int main(int argc,char *argv[]){
 
    walker.fill_xyz();
    walker.sVL(trotter,mps);
+   cout << Heisenberg::energy(mps,walker) << endl;
 
    return 0;
 

@@ -249,8 +249,6 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
    }
 
    //last site = L-1
-
-   //x
    for(int r = 0;r < 3;++r){
 
       tmp.clear();
