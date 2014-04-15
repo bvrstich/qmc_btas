@@ -26,16 +26,11 @@ Walker::Walker(int L,int d,double weight,int n_trot) : std::vector< ZArray<1> >(
    for(int i = 0;i < L;++i)
       (*this)[i].resize(d);
 
-   Vxyz.resize(L);
+   Vxyz.resize(3*L);
 
-   for(int i = 0;i < L;++i){
-
-      Vxyz[i].resize(3);//three direction x,y,z
-
+   for(int i = 0;i < L;++i)
       for(int r = 0;r < 3;++r)//regular vector
-         Vxyz[i][r].resize(d);
-
-   }
+         Vxyz[3*i + r].resize(d);
 
    VL.resize(3*n_trot);
 
@@ -212,7 +207,7 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
    for(int r = 0;r < 3;++r){
 
       tmp.clear();
-      Gemv(CblasTrans,one,Psi0[0],Vxyz[0][r],zero,tmp);
+      Gemv(CblasTrans,one,Psi0[0],Vxyz[r],zero,tmp);
 
       auxvec[0][r] = Dot(tmp,ro[0]);
 
@@ -230,7 +225,7 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
       for(int r = 0;r < 3;++r){
 
          tmp.clear();
-         Gemv(CblasTrans,one,Psi0[i],Vxyz[i][r],zero,tmp);
+         Gemv(CblasTrans,one,Psi0[i],Vxyz[i*3 + r],zero,tmp);
 
          tmp2.clear();
          Gemm(CblasNoTrans,CblasNoTrans,one,ro[i - 1],tmp,zero,tmp2);
@@ -252,7 +247,7 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
    for(int r = 0;r < 3;++r){
 
       tmp.clear();
-      Gemv(CblasTrans,one,Psi0[L - 1],Vxyz[L - 1][r],zero,tmp);
+      Gemv(CblasTrans,one,Psi0[L - 1],Vxyz[(L - 1)*3 + r],zero,tmp);
 
       auxvec[L - 1][r] = Dot(tmp,ro[L - 2]);
 
@@ -368,10 +363,19 @@ void Walker::fill_xyz() {
 
    for(int i = 0;i < L;++i){
 
-      Gemv(CblasNoTrans,one,Heisenberg::gSx(),(*this)[i],zero,Vxyz[i][0]);
-      Gemv(CblasNoTrans,one,Heisenberg::gSy(),(*this)[i],zero,Vxyz[i][1]);
-      Gemv(CblasNoTrans,one,Heisenberg::gSz(),(*this)[i],zero,Vxyz[i][2]);
+      Gemv(CblasNoTrans,one,Heisenberg::gSx(),(*this)[i],zero,Vxyz[i*3]);
+      Gemv(CblasNoTrans,one,Heisenberg::gSy(),(*this)[i],zero,Vxyz[i*3 + 1]);
+      Gemv(CblasNoTrans,one,Heisenberg::gSz(),(*this)[i],zero,Vxyz[i*3 + 2]);
 
    }
+
+}
+
+/**
+ * @return the xyz vector on site [i] of type r = 0,1,2 (x,y,z)
+ */
+const ZArray<1> &Walker::gVxyz(int i,int r) const {
+
+   return Vxyz[3*i + r];
 
 }

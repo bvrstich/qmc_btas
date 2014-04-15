@@ -19,6 +19,8 @@ class Heisenberg {
       //Constructor
       static void init(int,const DArray<2> &J);
 
+      static void clear();
+
       static const ZArray<2> &gSx();
 
       static const ZArray<2> &gSy();
@@ -26,6 +28,8 @@ class Heisenberg {
       static const ZArray<2> &gSz();
 
       static complex<double> energy(const MPS< complex<double> > &,const Walker &);
+
+      static void init_storage(const MPS< complex<double> > &);
 
    private:
 
@@ -64,6 +68,24 @@ class Heisenberg {
 
       //!the max number of operators
       static int max_ro;
+
+      //!some storage for the energy evaluations: identity
+      static vector< ZArray<2> > I;
+
+      //!some storage for the energy evaluations: closed terms
+      static vector< ZArray<2> > C;
+
+      //!some storage for the energy evaluations: connecting terms
+      static vector< vector< ZArray<2> > > ro;
+
+      //!some storage for the energy evaluations: local overlap
+      static vector< ZArray<2> > loc;
+
+      //!operations to be performed at every site: input-output
+      static vector< vector<int*> > job_cont;
+
+      //!operations to be performed at every site: input
+      static vector< vector<int> > job_close;
 
 };
 

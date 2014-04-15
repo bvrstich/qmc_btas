@@ -56,6 +56,8 @@ class Walker : public vector< ZArray<1> > {
 
       void fill_xyz();
 
+      const ZArray<1> &gVxyz(int,int) const;
+
       //Set the overlap with the trial wfn
       void sOverlap(const MPS< complex<double> > &Psi0);
 
@@ -87,7 +89,7 @@ class Walker : public vector< ZArray<1> > {
       std::vector< std::vector< complex<double> > > auxvec;
 
       //!Sx,Sy and Sz operator application to walker
-      std::vector< std::vector< ZArray<1> > > Vxyz;
+      std::vector< ZArray<1> > Vxyz;
       
       //The walker weight
       double weight;
