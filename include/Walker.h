@@ -69,6 +69,8 @@ class Walker : public vector< ZArray<1> > {
  
       void sEL(complex<double> );
 
+      void read(const char *);
+
      //void sEL(const MPO<complex<double>,Quantum> &O,const MPS<complex<double>,Quantum> &Psi0);
 
   private:

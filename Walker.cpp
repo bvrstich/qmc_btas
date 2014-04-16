@@ -9,6 +9,8 @@
 #include "include.h"
 
 using std::cout;
+using std::ifstream;
+using std::ofstream;
 using std::endl;
 
 /**
@@ -377,5 +379,19 @@ void Walker::fill_xyz() {
 const ZArray<1> &Walker::gVxyz(int i,int r) const {
 
    return Vxyz[3*i + r];
+
+}
+
+/** 
+ * fill the walker from file
+ * @param filename location of inputfile
+ */
+void Walker::read(const char *filename){
+
+   ifstream in(filename);
+
+   for(int i = 0;i < this->size();++i)
+      for(int s = 0;s < (*this)[i].shape(0);++s)
+         in >> i >> s >> (*this)[i](s);
 
 }
