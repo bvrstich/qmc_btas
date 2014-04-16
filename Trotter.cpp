@@ -6,6 +6,9 @@
 #include <complex>
 #include <vector>
 
+using std::cout;
+using std::endl;
+
 #include "include.h"
 
 /**
@@ -48,7 +51,7 @@ Trotter::Trotter(int d_in,const DArray<2> &J,double dtau){
          complex<double> tmp =  std::sqrt( (complex<double>)-Jeig(i) * dtau);
 
          for(int j = 0;j < L;++j)
-            V(k,j) = tmp * Uv(i,j);
+            V(k,j) = tmp * Uv(j,i);
 
          ++k;
 

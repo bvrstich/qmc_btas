@@ -28,7 +28,7 @@ int main(int argc,char *argv[]){
 
    //coupling matrix:
    DArray<2> J(L,L);
-   coupling::J1J2_2D(true,0.0,J);
+   coupling::J1J2_2D(false,0.0,J);
 
    Heisenberg::init(d,J);
 
@@ -47,7 +47,7 @@ int main(int argc,char *argv[]){
    walker.read(filename);
 
    cout << walker.calc_overlap(mps) << endl;
-/*
+
    walker.fill_xyz();
 
    walker.sVL(trotter,mps);
@@ -56,7 +56,7 @@ int main(int argc,char *argv[]){
       for(int r = 0;r < 3;++r)
          cout << i << "\t" << r << "\t|\t" << walker.gVL(i,r) << endl;
    cout << endl;
-
+/*
    Heisenberg::init_storage(mps);
    cout << Heisenberg::energy(mps,walker) << endl;
 */
