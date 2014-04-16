@@ -52,14 +52,9 @@ int main(int argc,char *argv[]){
 
    walker.sVL(trotter,mps);
 
-   for(int i = 0;i < trotter.gn_trot();++i)
-      for(int r = 0;r < 3;++r)
-         cout << i << "\t" << r << "\t|\t" << walker.gVL(i,r) << endl;
-   cout << endl;
-/*
    Heisenberg::init_storage(mps);
    cout << Heisenberg::energy(mps,walker) << endl;
-*/
+
    Heisenberg::clear();
 
    return 0;
