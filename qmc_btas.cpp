@@ -25,35 +25,25 @@ int main(int argc,char *argv[]){
    int L = atoi(argv[1]);
    int d = atoi(argv[2]);
    int D = atoi(argv[3]);
+   int j2 = atoi(argv[4]);
 
-   //coupling matrix:
-   DArray<2> J(L,L);
-   coupling::J1J2_2D(false,0.0,J);
+   Global::init(L,L,j2,d,D,false);
 
-   Heisenberg::init(d,J);
+   Heisenberg::init();
 
+   //read in the trial state
    char filename[200];
-   sprintf(filename,"input/J1J2/4x4/J2=0.0/Psi0/DT=%d.mps",D);
+   sprintf(filename,"input/J1J2/%dx%d/J2=0.%d/Psi0/DT=%d.mps",L,L,j2,D);
 
    MPS< complex<double> > mps(filename);
 
-   double dtau = 0.01;
-
-   Trotter trotter(d,J,dtau);
-
-   Walker walker(L,d,1.0,trotter.gn_trot());
-   sprintf(filename,"input/J1J2/4x4/J2=0.0/PsiW/DT=%d.mps",D);
-
-   walker.read(filename);
-
-   cout << walker.calc_overlap(mps) << endl;
-
-   walker.fill_xyz();
-
-   walker.sVL(trotter,mps);
-
+   //intialize some storage
    Heisenberg::init_storage(mps);
-   cout << Heisenberg::energy(mps,walker) << endl;
+
+   double dtau = 0.01;
+   int Nw = 1000;
+
+   AFQMC afqmc(mps,dtau,Nw);
 
    Heisenberg::clear();
 

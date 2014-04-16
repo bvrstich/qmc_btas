@@ -21,7 +21,7 @@ class Propagator : public vector< ZArray<2> > {
    public:
       
       //constructor
-      Propagator(int,int);
+      Propagator();
 
       //copy constructor
       Propagator(const Propagator &);
@@ -39,10 +39,6 @@ class Propagator : public vector< ZArray<2> > {
 
       int gr() const;
 
-      int gL() const;
-
-      int gd() const;
-
       void set(complex<double>,int,int);
 
       void fill(const Trotter &);
@@ -57,12 +53,6 @@ class Propagator : public vector< ZArray<2> > {
 
       //!type of operator (0=x,1=y or 2=z)
       int r;
-
-      //length of the chain
-      int L;
-
-      //!physical dimension
-      int d;
 
 };
 

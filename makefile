@@ -10,14 +10,14 @@
 BINNAME = qmc_btas
 CPPSRC	= qmc_btas.cpp\
            Random.cpp\
-           compress.cpp\
            coupling.cpp\
            Global.cpp\
            MPS.cpp\
            Walker.cpp\
            Trotter.cpp\
            Propagator.cpp\
-           Heisenberg.cpp
+           Heisenberg.cpp\
+           AFQMC.cpp
 
 
 OBJ	= $(CPPSRC:.cpp=.o)

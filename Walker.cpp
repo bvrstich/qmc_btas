@@ -116,7 +116,6 @@ const std::vector< std::vector< complex<double> > > &Walker::gauxvec() const{
 
 }
 
-
 /**
  * calculate the overlap between the D=1 walker and a large D MPS
  */
@@ -186,7 +185,7 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
    complex<double> zero(0.0,0.0);
 
    int L = this->size();
-   int d = trotter.gd();
+   int d = Global::gd();
 
    //start by constructing renormalized operator for overlap of Psi0 and walker state
    std::vector< ZArray<2> > ro(L - 1);
@@ -264,6 +263,8 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
          for(int i = 1;i < L;++i)
             VL[r*n_trot + k] += auxvec[i][r] * trotter.gV()(k,i);
 
+         VL[r*n_trot + k] /= overlap;
+
       }
 
 }
@@ -278,7 +279,7 @@ void Walker::multWeight(double factor){
 }
 
 /**
- * muliply the weight by a factor
+ * set new weight
  */
 void Walker::sWeight(double new_weight){
 
@@ -342,16 +343,13 @@ void Walker::normalize(){
 
 /** 
  * set the Local Energy: overlap has to be set first!
- * @param O mpo containing Hamiltonian
  * @param Psi0 trial wavefunction 
  */
-/*
-   void Walker::sEL(const MPO<complex<double>,Quantum> &O,const MPS<complex<double>,Quantum> &Psi0){
+void Walker::sEL(const MPS< complex<double> > &Psi0){
 
-   EL = mpsxx::inprod(mpsxx::Left,PsiW,O,Psi0) / overlap;
+   EL = Heisenberg::energy(Psi0,*this) / overlap;
 
-   }
- */
+}
 
 /**
  * fill the Sx,Sy and Sz rotated walker vectors

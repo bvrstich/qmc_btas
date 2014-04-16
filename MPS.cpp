@@ -14,6 +14,12 @@ using std::ifstream;
 #include "include.h"
 
 /** 
+ * empty constructor:
+ */
+template<typename T>
+MPS<T>::MPS() : vector< TArray<T,3> >() { }
+
+/** 
  * constructor: just sets the length of the vector, nothing is allocates or initialized
  * @param L_in length of the chain
  */
@@ -173,14 +179,17 @@ void MPS< complex<double> >::scal(complex<double> alpha){
 
 }
 
+template MPS<double>::MPS();
+template MPS< complex<double> >::MPS();
+
+template MPS<double>::MPS(int);
+template MPS< complex<double> >::MPS(int);
+
 template MPS<double>::MPS(int,int,int);
 template MPS< complex<double> >::MPS(int,int,int);
 
 template MPS<double>::MPS(const char *);
 template MPS< complex<double> >::MPS(const char *);
-
-template MPS<double>::MPS(int);
-template MPS< complex<double> >::MPS(int);
 
 template MPS<double>::MPS(const MPS<double> &);
 template MPS< complex<double> >::MPS(const MPS< complex<double> > &);

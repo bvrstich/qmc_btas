@@ -11,12 +11,6 @@ using std::endl;
 
 #include "include.h"
 
-DArray<2> Heisenberg::J;
-
-int Heisenberg::L;
-
-int Heisenberg::d;
-
 ZArray<2> Heisenberg::Sx;
 
 ZArray<2> Heisenberg::Sy;
@@ -29,9 +23,9 @@ std::vector< std::vector<int> > Heisenberg::out;
 
 vector<int> Heisenberg::no;
 
-vector< vector<int> > Heisenberg::to(L);
+vector< vector<int> > Heisenberg::to;
 
-vector< vector<int> > Heisenberg::nc(L);
+vector< vector<int> > Heisenberg::nc;
 
 int Heisenberg::max_ro;
 
@@ -51,12 +45,10 @@ vector< vector<int> > Heisenberg::job_close;
  * @param d_in physical dimension
  * @param J_in coupling matrix
  */
-void Heisenberg::init(int d_in,const DArray<2> &J_in){
+void Heisenberg::init(){
 
-   L = J_in.shape(0);
-   d = d_in;
-
-   J = J_in;
+   int d = Global::gd();
+   int L = Global::gL();
 
    //Sx
    Sx.resize(d,d);
@@ -88,7 +80,7 @@ void Heisenberg::init(int d_in,const DArray<2> &J_in){
    for(int i = 0;i < L;++i){
 
       for(int j = i + 1;j < L;++j)
-         if( fabs(J(i,j)) > 1.0e-15 )
+         if( fabs(Global::gJ()(i,j)) > 1.0e-15 )
             out[i].push_back(j);
 
    }
@@ -99,7 +91,7 @@ void Heisenberg::init(int d_in,const DArray<2> &J_in){
    for(int i = 1;i < L;++i){
 
       for(int j = 0;j < i;++j)
-         if( fabs(J(i,j)) > 1.0e-15 )
+         if( fabs(Global::gJ()(i,j)) > 1.0e-15 )
             in[i].push_back(j);
 
    }
@@ -259,6 +251,8 @@ const ZArray<2> &Heisenberg::gSz() {
  */
 complex<double> Heisenberg::energy(const MPS< complex<double> > &mps,const Walker &walker){
 
+   int L = Global::gL();
+
    complex<double> one(1.0,0.0);
    complex<double> zero(0.0,0.0);
 
@@ -336,6 +330,8 @@ complex<double> Heisenberg::energy(const MPS< complex<double> > &mps,const Walke
  * initialize the storages needed for the evaluation of the energy, so that this doesn't have to be done every time during the program
  */
 void Heisenberg::init_storage(const MPS< complex<double> > &mps){
+
+   int L = Global::gL();
 
    I.resize(L - 1);
 

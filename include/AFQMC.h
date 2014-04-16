@@ -16,25 +16,25 @@ class AFQMC {
    public:
    
       //constructor with input trialwavefunction
-      AFQMC(const MPO<complex<double>,Quantum> &ham,const Trotter &Trotter,const MPS<complex<double>,Quantum> &Psi0,int DW, int Nwalkers,double dtau);
+      AFQMC(const MPS< complex<double> > &,double,int);
       
       //Destructor
-      ~AFQMC();
+      virtual ~AFQMC();
       
       //Let the walkers propagate for steps steps
-      void Walk(const int steps);
+      void Walk(int);
 
       //Propagate my population of walkers for 1 timestep. Return the sum of the coeff of my walkers.
       double Propagate();
       
       //Control the population of walkers based on scaling * weight
-      void PopulationControl(double scaling);
+      void PopulationControl(double);
 
       //Calculate the single walker projected energies, update the energy history, calculate the fluctuation metric, and the total projected energy
       complex<double> gEP();
 
       //Write the projected energy, target energy
-      void write(const int step,const int nwalkers, const double projectedEnergy, const double targetEnergy);
+      void write(int,int,double,double);
 
       //Setup the walkers
       void SetupWalkers();
@@ -44,17 +44,11 @@ class AFQMC {
       //!The Trotter decomposition of the Hamiltonian
       Trotter *trotter;
 
-      //!The MPO form of the hamiltonian
-      MPO<complex<double>,Quantum> ham;
-
       //!number of trotter terms
       int n_trot;
       
-      //!The MPS truncation dimension of the walkers
-      int DW;
-      
       //!The total desired number of walkers
-      int Nwalkers;
+      int Nw;
       
       //!The imaginary time step size (positive)
       double dtau;
@@ -63,16 +57,10 @@ class AFQMC {
       Propagator *P;
       
       //!Trial wfn 
-      MPS<complex<double>,Quantum> Psi0;
+      MPS< complex<double> > Psi0;
       
       //!The walkers
-      std::vector<Walker*> theWalkers;
-
-      //!length of the chain
-      int L;
-
-      //!physical dimension
-      int d;
+      std::vector<Walker*> walker;
       
 };
 

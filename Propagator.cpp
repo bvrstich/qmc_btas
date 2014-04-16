@@ -19,17 +19,14 @@ using std::complex;
  * standard constructor: sets the size of vector, and initializes the QSZArray objects to the correct quantumnumbers and dimensions
  * @param L size
  */
-Propagator::Propagator(int L_in,int d_in) : vector< ZArray<2> > (L_in) {
-
-   L = L_in;
-   d = d_in;
+Propagator::Propagator() : vector< ZArray<2> > (Global::gL()) {
 
    x = 0.0;
    k = 0;
    r = 0;
   
-   for(int i = 0;i < L;++i)
-      (*this)[i].resize(d,d);
+   for(int i = 0;i < Global::gL();++i)
+      (*this)[i].resize(Global::gd(),Global::gd());
  
 }
 
@@ -38,9 +35,6 @@ Propagator::Propagator(int L_in,int d_in) : vector< ZArray<2> > (L_in) {
  * @param prop_copy input Propagator object
  */
 Propagator::Propagator(const Propagator &prop_copy) : vector< ZArray<2> > (prop_copy) {
-
-   L = prop_copy.gL();
-   d = prop_copy.gd();
 
    x = prop_copy.gx();
    k = prop_copy.gk();
@@ -81,23 +75,6 @@ int Propagator::gr() const {
 }
 
 /**
- * @return the length of the chain
- */
-int Propagator::gL() const {
-
-   return L;
-
-}
-
-/**
- * @return the physical dimension
- */
-int Propagator::gd() const {
-
-   return d;
-
-}
-/**
  * set the variables to fill the propagator on
  */
 void Propagator::set(complex<double> x_in,int k_in,int r_in){
@@ -112,6 +89,9 @@ void Propagator::set(complex<double> x_in,int k_in,int r_in){
  * fill the propagator using a Trotter input object
  */
 void Propagator::fill(const Trotter &trotter) {
+
+   int L = Global::gL();
+   int d = Global::gd();
 
    if(r == 0){//x
 

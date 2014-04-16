@@ -17,7 +17,7 @@ class Heisenberg {
    public:
 
       //Constructor
-      static void init(int,const DArray<2> &J);
+      static void init();
 
       static void clear();
 
@@ -33,20 +33,11 @@ class Heisenberg {
 
    private:
 
-      //!coupling matrix
-      static DArray<2> J;
-
       //!bookkeeping, site interactions coming in
       static std::vector< std::vector<int> > in;
 
       //!bookkeeping, site interactions going out
       static std::vector< std::vector<int> > out;
-
-      //The chain length
-      static int L;
-
-      //!physical dimension
-      static int d;
 
       //!Sx matrix
       static ZArray<2> Sx;

@@ -1,5 +1,4 @@
 //nog enkele definities:
-
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -24,8 +23,10 @@
 #include "Global.h"
 #include "MPS.h"
 #include "coupling.h"
-#include "compress.h"
 #include "Walker.h"
 #include "Trotter.h"
 #include "Propagator.h"
 #include "Heisenberg.h"
+#include "AFQMC.h"
+
+using namespace btas;

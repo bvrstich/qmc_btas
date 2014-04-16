@@ -8,9 +8,6 @@
 
 #include "include.h"
 
-using namespace mpsxx;
-using namespace btas;
-
 using std::cout;
 using std::endl;
 using std::complex;
@@ -21,38 +18,32 @@ using std::ios;
 
 /**
  * constructor of the AFQMC object, takes input parameters that define the QMC walk.
- * @param ham MPO form of the Hamiltonian
  * @param trotter trotter terms for the interaction
  * @param Psi0_in input trialwavefunction
- * @param DW dimension of the walkers
  * @param Nwalkers number of Walker states
  * @param dtau time step of each evolution
  */
-AFQMC::AFQMC(const MPO<complex<double>,Quantum> &ham_in,const Trotter &trotter_in,const MPS<complex<double>,Quantum> &Psi0_in,int DW,int Nwalkers_in,double dtau){
+AFQMC::AFQMC(const MPS< complex<double> > &Psi0_in,double dtau_in,int Nw_in){
 
-   this->DW = DW;
-   this->dtau = dtau;
+   this->dtau = dtau_in;
    this->Psi0 = Psi0_in;
-   this->ham = ham_in;
 
-   this->trotter = new Trotter(trotter_in);
+   this->trotter = new Trotter(dtau);
 
-   L = trotter_in.gL();
-   d = trotter_in.gd();
-   n_trot = trotter_in.gn_trot();
+   n_trot = trotter->gn_trot();
 
-   this->Nwalkers = Nwalkers_in;
+   this->Nw = Nw_in;
 
    SetupWalkers();
 
-   P = new Propagator(L,d);
+   P = new Propagator();
 
 }
 
 AFQMC::~AFQMC(){
 
-   for(int i = 0;i < theWalkers.size();++i)
-      delete theWalkers[i];
+   for(int i = 0;i < walker.size();++i)
+      delete walker[i];
 
    delete trotter;
    delete P;
@@ -64,29 +55,32 @@ AFQMC::~AFQMC(){
  */
 void AFQMC::SetupWalkers(){
 
-   theWalkers.resize(Nwalkers);
+   walker.resize(Nw);
 
-   MPS<complex<double>,Quantum> PsiW;
-   Tools::read(PsiW,"/home/bright/bestanden/programmas/dmrg/J1J2/4x4/J2=0.0/Psi0/DT=4.mps");
+   walker[0] = new Walker(Global::gL(),Global::gd(),1.0,n_trot);
 
-   theWalkers[0] = new Walker(PsiW,1.0,n_trot);
+   //read in the initial walker state
+   char filename[200];
+   sprintf(filename,"input/J1J2/%dx%d/J2=0.%d/PsiW/DT=%d.mps",Global::gLx(),Global::gLy(),Global::gj2(),Global::gD());
 
-   theWalkers[0]->sOverlap(Psi0);
-   theWalkers[0]->sEL(ham,Psi0);
-   theWalkers[0]->sVL(*trotter,Psi0);
+   walker[0]->read(filename);
+/*
+   walker[0]->sOverlap(Psi0);
+   walker[0]->sEL(ham,Psi0);
+   walker[0]->sVL(*trotter,Psi0);
 
    //now copy this to all the other walkers
    for(int cnt = 1;cnt < theWalkers.size();cnt++)
       theWalkers[cnt] = new Walker(*theWalkers[0]);
-
+*/
 }
-
+/*
 void AFQMC::Walk(const int steps){
 
    complex<double> EP = gEP();
 
-   char filename[100];
-   sprintf(filename,"output/J1J2/4x4/J2=0.0/DW%d.txt",DW);
+   char filename[200];
+   sprintf(filename,"output/J1J2/%dx%d/J2=0.%d/DT=%d.txt",Global::gLx(),Global::gLy(),Global::gj2(),mps.gD());
 
    ofstream output(filename,ios::trunc);
 
@@ -96,7 +90,7 @@ void AFQMC::Walk(const int steps){
    cout << "Energy at start = " << EP << endl;
    cout << "---------------------------------------------------------" << endl;
 
-   for (int step=1; step<=steps; step++){
+   for (int step=1;step <= steps;step++){
 
       //Propagate the walkers of each rank separately --> no MPI in that function
       double wsum = Propagate();
@@ -141,10 +135,11 @@ void AFQMC::Walk(const int steps){
    }
 
 }
-
+*/
 /**
  * Here the trotter terms, propagator terms are applied to every walker individually.
  */
+ /*
 double AFQMC::Propagate(){
 
    double sum = 0.0;
@@ -160,15 +155,15 @@ double AFQMC::Propagate(){
             double x = Tools::RN.normal();
 
             complex<double> shift = theWalkers[walker]->gVL(k,r);
-            
+
             //set the values
             P->set(x + shift,k,r);
 
             //and fill the propagator
-      //      P->fill(*trotter);
+            //      P->fill(*trotter);
 
             //and apply it to the walker
-     //       theWalkers[walker]->propagate(*P);
+            //       theWalkers[walker]->propagate(*P);
 
          }
 
@@ -176,7 +171,7 @@ double AFQMC::Propagate(){
 
       complex<double> prev_EL = theWalkers[walker]->gEL();
 
-    //  theWalkers[walker]->sEL(ham,Psi0);
+      //  theWalkers[walker]->sEL(ham,Psi0);
 
       complex<double> EL = theWalkers[walker]->gEL();
 
@@ -184,7 +179,7 @@ double AFQMC::Propagate(){
 
       theWalkers[walker]->multWeight(scale);
 
-   //   theWalkers[walker]->sVL(*trotter,Psi0);
+      //   theWalkers[walker]->sVL(*trotter,Psi0);
 
       sum += theWalkers[walker]->gWeight();
 
@@ -193,7 +188,8 @@ double AFQMC::Propagate(){
    return sum;
 
 }
-
+*/
+/*
 void AFQMC::PopulationControl(const double scaling){
 
    double minw = 1.0;
@@ -297,3 +293,4 @@ void AFQMC::write(const int step,const int nwalkers,const double EP, const doubl
    output.close();
 
 }
+*/

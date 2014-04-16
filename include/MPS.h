@@ -21,6 +21,8 @@ class MPS : public vector< TArray<T,3> > {
 
    public:
 
+      MPS();
+
       MPS(int L);
 
       MPS(int L,int d,int D);

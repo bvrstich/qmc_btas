@@ -71,7 +71,7 @@ class Walker : public vector< ZArray<1> > {
 
       void read(const char *);
 
-     //void sEL(const MPO<complex<double>,Quantum> &O,const MPS<complex<double>,Quantum> &Psi0);
+      void sEL(const MPS< complex<double> > &Psi0);
 
   private:
    

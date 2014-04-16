@@ -13,22 +13,20 @@ using std::endl;
 
 /**
  * constructor, diagonalizes the coupling matrix J to make the auxiliary field operators V(r,k)
- * @param d physical dimension
- * @param J coupling matrix
  * @param dtau time step
  */
-Trotter::Trotter(int d_in,const DArray<2> &J,double dtau){
+Trotter::Trotter(double dtau){
 
-   L = J.shape(0);
+   int L = Global::gL();
+   int d = Global::gd();
 
    this->dtau = dtau;
-   this->d = d_in;
 
    //diagonalize the coupling matrix
    DArray<1> Jeig;
    DArray<2> Uv;
 
-   Syev('V','U',J,Jeig,Uv);
+   Syev('V','U',Global::gJ(),Jeig,Uv);
 
    n_trot = 0;
 
@@ -73,7 +71,7 @@ Trotter::Trotter(int d_in,const DArray<2> &J,double dtau){
 
       for(int j = 0;j < d;++j)
          for(int k = 0;k < d;++k)
-            Mx[i](j,k) = U(i,j) * std::conj(U(i,k));
+            Mx[i](j,k) = U(j,i) * std::conj(U(k,i));
 
    }
 
@@ -88,7 +86,7 @@ Trotter::Trotter(int d_in,const DArray<2> &J,double dtau){
 
       for(int j = 0;j < d;++j)
          for(int k = 0;k < d;++k)
-            My[i](j,k) = U(i,j) * std::conj(U(i,k));
+            My[i](j,k) = U(j,i) * std::conj(U(k,i));
 
    }
 
@@ -111,11 +109,11 @@ Trotter::Trotter(int d_in,const DArray<2> &J,double dtau){
  */
 Trotter::Trotter(const Trotter &trot_copy){
 
+   int d = Global::gd();
+
    dtau = trot_copy.gdtau();
    V = trot_copy.gV();
    n_trot = trot_copy.gn_trot();
-   L = trot_copy.gL();
-   d = trot_copy.gd();
 
    Mx.resize(d);
    My.resize(d);
@@ -160,24 +158,6 @@ const ZArray<2> &Trotter::gV() const {
 int Trotter::gn_trot() const {
 
    return n_trot;
-
-}
-
-/**
- * @return the length of the chain
- */
-int Trotter::gL() const {
-
-   return L;
-
-}
-
-/**
- * @return the physical dimension
- */
-int Trotter::gd() const {
-
-   return d;
 
 }
 

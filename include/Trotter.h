@@ -14,7 +14,7 @@ class Trotter {
    public:
    
       //Constructor
-      Trotter(int,const DArray<2> &, double);
+      Trotter(double);
 
       //copy constructor
       Trotter(const Trotter &trot_copy);
@@ -28,10 +28,6 @@ class Trotter {
       
       int gn_trot() const;
 
-      int gL() const;
-
-      int gd() const;
-
       const ZArray<2> &gMx(int) const;
 
       const ZArray<2> &gMy(int) const;
@@ -40,14 +36,8 @@ class Trotter {
 
    private:
    
-      //The chain length
-      int L;
-      
       //!the transformation matrix
       ZArray<2> V;
-
-      //!physical dimension
-      int d;
 
       //!the number of non-zero eigenvalues of the coupling matrix: equals the number of trotter product terms
       int n_trot;
