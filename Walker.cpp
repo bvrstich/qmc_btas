@@ -295,7 +295,9 @@ void Walker::sWeight(double new_weight){
  */
 void Walker::propagate(const Propagator &P){
 
-   ZArray<1> tmp;
+   int d = Global::gd();
+
+   ZArray<1> tmp(d);
 
    complex<double> one(1.0,0.0);
    complex<double> zero(0.0,0.0);
@@ -304,9 +306,8 @@ void Walker::propagate(const Propagator &P){
 
    for(int i = 0;i < this->size();++i){
 
-      tmp.clear();
-
-      Gemv(CblasNoTrans,one,P[i],(*this)[i],zero,tmp);
+      //Gemv(CblasNoTrans,one,P[i],(*this)[i],zero,tmp);
+      blas::gemv(CblasRowMajor,CblasNoTrans, d, d, one, P[i].data(), d, (*this)[i].data(), 1, zero, tmp.data(), 1);
 
       (*this)[i] = std::move(tmp);
 

@@ -252,12 +252,14 @@ const ZArray<2> &Heisenberg::gSz() {
 complex<double> Heisenberg::energy(const MPS< complex<double> > &mps,const Walker &walker){
 
    int L = Global::gL();
+   int d = Global::gd();
 
    complex<double> one(1.0,0.0);
    complex<double> zero(0.0,0.0);
 
    //first site
-   Gemv(CblasTrans,one,mps[0],walker[0],zero,I[0]);
+   //Gemv(CblasTrans,one,mps[0],walker[0],zero,I[0]);
+   blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[0].data(), d, walker[0].data(), 1, zero, I[0].data(), 1);
 
    for(int r = 0;r < 3;++r)
       Gemv(CblasTrans,one,mps[0],walker.gVxyz(0,r),zero,ro[0][r]);
