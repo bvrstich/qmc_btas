@@ -22,7 +22,7 @@ class AFQMC {
       virtual ~AFQMC();
       
       //Let the walkers propagate for steps steps
-      void Walk(int);
+      void walk(int);
 
       //Propagate my population of walkers for 1 timestep. Return the sum of the coeff of my walkers.
       double Propagate();
@@ -34,7 +34,7 @@ class AFQMC {
       complex<double> gEP();
 
       //Write the projected energy, target energy
-      void write(int,int,double,double);
+      void write(int,double,double);
 
       //Setup the walkers
       void SetupWalkers();

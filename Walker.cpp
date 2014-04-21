@@ -15,15 +15,15 @@ using std::endl;
 
 /**
  * construct a Walker object
- * @param L length of the chain
- * @param d physical dimension
- * @param weight input weight
+ * @param weight_in input weight
  * @param n_trot number of trotter terms
  */
-Walker::Walker(int L,int d,double weight,int n_trot) : std::vector< ZArray<1> >(L){
+Walker::Walker(int n_trot_in) : std::vector< ZArray<1> >(Global::gL()){
 
-   this->weight = weight;
-   this->n_trot = n_trot;
+   int L = Global::gL(); 
+   int d = Global::gd(); 
+
+   this->n_trot = n_trot_in;
 
    for(int i = 0;i < L;++i)
       (*this)[i].resize(d);
@@ -48,12 +48,14 @@ Walker::Walker(int L,int d,double weight,int n_trot) : std::vector< ZArray<1> >(
  */
 Walker::Walker(const Walker &walker) : std::vector< ZArray<1> >(walker) {
 
-   weight = walker.gWeight();
+   this->weight = walker.gWeight();
+
    n_trot = walker.gn_trot();
    overlap = walker.gOverlap();
    EL = walker.gEL();
    VL = walker.gVL();
    auxvec = walker.gauxvec();
+   Vxyz = walker.Vxyz;
 
 }
 
@@ -337,7 +339,7 @@ void Walker::fill_Random(){
 void Walker::normalize(){
 
    for(int i = 0;i < this->size();++i)
-      Normalize((*this)[i]);
+      Normalize( (*this)[i] );
 
 }
 

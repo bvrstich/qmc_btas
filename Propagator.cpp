@@ -99,7 +99,7 @@ void Propagator::fill(const Trotter &trotter) {
 
          (*this)[site] = trotter.gMx(0);
 
-         double m = 0.5 * ( d - 1.0 );
+         double m = -0.5 * ( d - 1.0 );
 
          Scal( exp(x * trotter.gV()(k,site) * m ) , (*this)[site] );
 
@@ -120,7 +120,7 @@ void Propagator::fill(const Trotter &trotter) {
 
          (*this)[site] = trotter.gMy(0);
 
-         double m = 0.5 * ( d - 1.0 );
+         double m = -0.5 * ( d - 1.0 );
 
          Scal( exp(x * trotter.gV()(k,site) * m ) , (*this)[site] );
 
@@ -141,7 +141,7 @@ void Propagator::fill(const Trotter &trotter) {
 
          (*this)[site] = trotter.gMz(0);
 
-         double m = 0.5 * ( d - 1.0 );
+         double m = -0.5 * ( d - 1.0 );
 
          Scal( exp(x * trotter.gV()(k,site) * m ) , (*this)[site] );
 

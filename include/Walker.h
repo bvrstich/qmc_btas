@@ -22,7 +22,7 @@ class Walker : public vector< ZArray<1> > {
    public:
    
       //Constructor copying an MPSstate
-      Walker(int,int,double weight,int n_trot);
+      Walker(int);
       
       //Constructor copying an entire Walker
       Walker(const Walker &walker);
