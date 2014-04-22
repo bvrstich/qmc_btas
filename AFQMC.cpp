@@ -70,6 +70,7 @@ void AFQMC::SetupWalkers(){
    walker[0]->fill_xyz();
 
    walker[0]->sEL(Psi0);
+
    walker[0]->sVL(*trotter,Psi0);
    walker[0]->sWeight(1.0);
 

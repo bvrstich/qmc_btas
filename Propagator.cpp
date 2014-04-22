@@ -92,22 +92,23 @@ void Propagator::fill(const Trotter &trotter) {
 
    int L = Global::gL();
    int d = Global::gd();
+   int size = d*d;
 
    if(r == 0){//x
 
       for(int site = 0;site < L;++site){
 
-         (*this)[site] = trotter.gMx(0);
+         blas::copy(size, trotter.gMx(0).data(), 1, (*this)[site].data(), 1);
 
          double m = -0.5 * ( d - 1.0 );
 
-         Scal( exp(x * trotter.gV()(k,site) * m ) , (*this)[site] );
+         blas::scal(size, exp(x * trotter.gV()(k,site) * m ) , (*this)[site].data(), 1);
 
          for(int i = 1;i < d;++i){
 
             m++;
 
-            Axpy( exp(  x * trotter.gV()(k,site) * m ) , trotter.gMx(i), (*this)[site] );
+            blas::axpy(size, exp(  x * trotter.gV()(k,site) * m ) , trotter.gMx(i).data(), 1, (*this)[site].data(), 1);
 
          }
 
@@ -118,17 +119,17 @@ void Propagator::fill(const Trotter &trotter) {
 
       for(int site = 0;site < L;++site){
 
-         (*this)[site] = trotter.gMy(0);
+         blas::copy(size, trotter.gMy(0).data(), 1, (*this)[site].data(), 1);
 
          double m = -0.5 * ( d - 1.0 );
 
-         Scal( exp(x * trotter.gV()(k,site) * m ) , (*this)[site] );
+         blas::scal(size, exp(x * trotter.gV()(k,site) * m ) , (*this)[site].data(), 1);
 
          for(int i = 1;i < d;++i){
 
             m++;
 
-            Axpy( exp(  x * trotter.gV()(k,site) * m ) , trotter.gMy(i), (*this)[site] );
+            blas::axpy(size, exp(  x * trotter.gV()(k,site) * m ) , trotter.gMy(i).data(), 1, (*this)[site].data(), 1);
 
          }
 
@@ -139,17 +140,17 @@ void Propagator::fill(const Trotter &trotter) {
 
       for(int site = 0;site < L;++site){
 
-         (*this)[site] = trotter.gMz(0);
+         blas::copy(size, trotter.gMz(0).data(), 1, (*this)[site].data(), 1);
 
          double m = -0.5 * ( d - 1.0 );
 
-         Scal( exp(x * trotter.gV()(k,site) * m ) , (*this)[site] );
+         blas::scal(size, exp(x * trotter.gV()(k,site) * m ) , (*this)[site].data(), 1);
 
          for(int i = 1;i < d;++i){
 
             m++;
 
-            Axpy( exp(  x * trotter.gV()(k,site) * m ) , trotter.gMz(i), (*this)[site] );
+            blas::axpy(size, exp(  x * trotter.gV()(k,site) * m ) , trotter.gMz(i).data(), 1, (*this)[site].data(), 1);
 
          }
 

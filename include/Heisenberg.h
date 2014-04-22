@@ -69,16 +69,14 @@ class Heisenberg {
       //!some storage for the energy evaluations: connecting terms
       static vector< vector< ZArray<2> > > ro;
 
-      //!some storage for the energy evaluations: local overlap
-      static vector< ZArray<2> > loc;
-
       //!operations to be performed at every site: input-output
       static vector< vector<int*> > job_cont;
 
       //!operations to be performed at every site: input
       static vector< vector<int> > job_close;
 
-      static vector<int> gemv_list;
+      //!coupling factor for the closing terms
+      static vector< vector< complex<double> > > close_coupling;
 
 };
 

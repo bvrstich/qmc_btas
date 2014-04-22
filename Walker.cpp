@@ -123,29 +123,26 @@ const std::vector< std::vector< complex<double> > > &Walker::gauxvec() const{
  */
 complex<double> Walker::calc_overlap(const MPS< complex<double> > &mps) const {
 
+   int L = Global::gL();
+   int d = Global::gd();
+
    complex<double> one(1.0,0.0);
    complex<double> zero(0.0,0.0);
 
-   ZArray<2> E;
+   blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[0].data(), d, (*this)[0].data(), 1, zero, Global::LO[0].data(), 1);
 
-   Gemv(CblasTrans,one,mps[0],(*this)[0],zero,E);
+   for(int i = 1;i < L;++i){
 
-   ZArray<2> E_tmp;
-   ZArray<2> tmp;
+      int Ldim = mps[i].shape(1);
+      int Rdim = mps[i].shape(2);
 
-   for(int i = 1;i < mps.size();++i){
+      blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, mps[i].data(), Global::gemv_list[i], (*this)[i].data(), 1, zero, Global::loc[i].data(), 1);
 
-      tmp.clear();
-      Gemv(CblasTrans,one,mps[i],(*this)[i],zero,tmp);
-
-      E_tmp.clear();
-      Gemm(CblasNoTrans,CblasNoTrans,one,E,tmp,zero,E_tmp);
-
-      E = std::move(E_tmp);
+      blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[i].data(), Rdim, Global::LO[i - 1].data(), 1, zero, Global::LO[i].data(), 1);
 
    }
 
-   return E(0,0);
+   return Global::LO[L - 1](0);
 
 }
 
@@ -186,73 +183,66 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
    complex<double> one(1.0,0.0);
    complex<double> zero(0.0,0.0);
 
-   int L = this->size();
+   int L = Global::gL();
    int d = Global::gd();
 
    //start by constructing renormalized operator for overlap of Psi0 and walker state
-   std::vector< ZArray<2> > ro(L - 1);
 
    //last site
-   Gemv(CblasTrans,one,Psi0[L - 1],(*this)[L - 1],zero,ro[L - 2]);
-
-   ZArray<2> tmp;
+   blas::gemv(CblasRowMajor, CblasTrans, d, d, one, Psi0[L - 1].data(), d, (*this)[L - 1].data(), 1, zero, Global::RO[L - 1].data(), 1);
 
    for(int i = L - 2;i > 0;--i){
 
-      tmp.clear();
-      Gemv(CblasTrans,one,Psi0[i],(*this)[i],zero,tmp);
+      int Ldim = Psi0[i].shape(1);
+      int Rdim = Psi0[i].shape(2);
 
-      Gemm(CblasNoTrans,CblasNoTrans,one,tmp,ro[i],zero,ro[i - 1]);
+      blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, Psi0[i].data(), Global::gemv_list[i], (*this)[i].data(), 1, zero, Global::loc[i].data(), 1);
+
+      blas::gemv(CblasRowMajor, CblasNoTrans, Ldim, Rdim, one, Global::loc[i].data(), Rdim, Global::RO[i + 1].data(), 1, zero, Global::RO[i].data(), 1);
 
    }
 
    //first site = 0
    for(int r = 0;r < 3;++r){
 
-      tmp.clear();
-      Gemv(CblasTrans,one,Psi0[0],Vxyz[r],zero,tmp);
+      blas::gemv(CblasRowMajor, CblasTrans, d, d, one, Psi0[0].data(), d, Vxyz[r].data(), 1, zero, Global::loc[0].data(), 1);
 
-      auxvec[0][r] = Dot(tmp,ro[0]);
+      auxvec[0][r] = blas::dot(d,Global::loc[0].data(),1,Global::RO[1].data(),1);
 
    }
 
    //make the left operator
-   ro[0].clear();
-   Gemv(CblasTrans,one,Psi0[0],(*this)[0],zero,ro[0]);
-
-   ZArray<2> tmp2;
+   blas::gemv(CblasRowMajor, CblasTrans, d, d, one, Psi0[0].data(), d, (*this)[0].data(), 1, zero, Global::LO[0].data(), 1);
 
    //calculate auxvec for middle sites
    for(int i = 1;i < L - 1;++i){
 
+      int Ldim = Psi0[i].shape(1);
+      int Rdim = Psi0[i].shape(2);
+
       for(int r = 0;r < 3;++r){
 
-         tmp.clear();
-         Gemv(CblasTrans,one,Psi0[i],Vxyz[i*3 + r],zero,tmp);
+         blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, Psi0[i].data(), Global::gemv_list[i], Vxyz[i*3 + r].data(), 1, zero, Global::loc[i].data(), 1);
 
-         tmp2.clear();
-         Gemm(CblasNoTrans,CblasNoTrans,one,ro[i - 1],tmp,zero,tmp2);
+         blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[i].data(), Rdim, Global::LO[i - 1].data(), 1, zero, Global::LO[i].data(), 1);
 
-         auxvec[i][r] = Dot(tmp2,ro[i]);
+         auxvec[i][r] = blas::dot(Rdim,Global::LO[i].data(),1,Global::RO[i + 1].data(),1);
 
       }
 
       //make the left operator
-      tmp.clear();
-      Gemv(CblasTrans,one,Psi0[i],(*this)[i],zero,tmp);
+      blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, Psi0[i].data(), Global::gemv_list[i], (*this)[i].data(), 1, zero, Global::loc[i].data(), 1);
 
-      ro[i].clear();
-      Gemm(CblasNoTrans,CblasNoTrans,one,ro[i - 1],tmp,zero,ro[i]);
+      blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[i].data(), Rdim, Global::LO[i - 1].data(), 1, zero, Global::LO[i].data(), 1);
 
    }
 
    //last site = L-1
    for(int r = 0;r < 3;++r){
 
-      tmp.clear();
-      Gemv(CblasTrans,one,Psi0[L - 1],Vxyz[(L - 1)*3 + r],zero,tmp);
+      blas::gemv(CblasRowMajor, CblasTrans, d, d, one, Psi0[L - 1].data(), d, Vxyz[(L - 1)*3 + r].data(), 1, zero, Global::loc[L - 1].data(), 1);
 
-      auxvec[L - 1][r] = Dot(tmp,ro[L - 2]);
+      auxvec[L - 1][r] = blas::dot(d,Global::LO[L - 2].data(),1,Global::loc[L - 1].data(),1);
 
    }
 

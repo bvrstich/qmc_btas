@@ -4,9 +4,11 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <complex>
 
 using std::ostream;
 using std::vector;
+using std::complex;
 
 template<typename T>
 class MPS;
@@ -18,7 +20,7 @@ using namespace btas;
 /**
  * @author Brecht Verstichel
  * @date 26-03-2014\n\n
- * Class which stores some globar variables and functions on them for use in program
+ * Class which stores some globar variables, storage, and functions on them for use in program
  */
 class Global {
 
@@ -51,7 +53,13 @@ class Global {
       static void init_storage(const MPS< complex<double> > &);
 
       //!public storage for contractions: for the overlap
-      static std::vector< ZArray<1> > EO;
+      static std::vector< ZArray<1> > LO;
+      static std::vector< ZArray<1> > RO;
+
+      //!some storage: local overlap
+      static vector< ZArray<2> > loc;
+
+      static vector<int> gemv_list;
 
    private:
 

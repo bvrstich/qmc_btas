@@ -35,13 +35,11 @@ vector< ZArray<2> > Heisenberg::C;
 
 vector< vector< ZArray<2> > > Heisenberg::ro;
 
-vector< ZArray<2> > Heisenberg::loc;
-
 vector< vector<int*> > Heisenberg::job_cont;
 
 vector< vector<int> > Heisenberg::job_close;
 
-vector<int> Heisenberg::gemv_list;
+vector< vector< complex<double> > > Heisenberg::close_coupling;
 
 /**
  * @param d_in physical dimension
@@ -208,6 +206,15 @@ void Heisenberg::init(){
 
    }
 
+   close_coupling.resize(L - 1);
+
+   for(int i = 0;i < L - 2;++i)
+      for(int j = 0;j < job_close[i].size();++j)
+         close_coupling[i].push_back(Global::gJ()(to[i][job_close[i][j]],i+1));
+
+   for(int i = 0;i < in[L - 1].size();++i)
+      close_coupling[L - 2].push_back(Global::gJ()(in[L - 1][i],L - 1));
+
 }
 
 /**
@@ -274,13 +281,13 @@ complex<double> Heisenberg::energy(const MPS< complex<double> > &mps,const Walke
       int Rdim = mps[i].shape(2);
 
       //continue from previous site:
-      blas::gemv(CblasRowMajor, CblasTrans, d, gemv_list[i], one, mps[i].data(), gemv_list[i], walker[i].data(), 1, zero, loc[i].data(), 1);
+      blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, mps[i].data(), Global::gemv_list[i], walker[i].data(), 1, zero, Global::loc[i].data(), 1);
 
       //I
-      blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, loc[i].data(), Rdim, I[i - 1].data(), 1, zero, I[i].data(), 1);
+      blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[i].data(), Rdim, I[i - 1].data(), 1, zero, I[i].data(), 1);
 
       //C
-      blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, loc[i].data(), Rdim, C[i - 1].data(), 1, zero, C[i].data(), 1);
+      blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[i].data(), Rdim, C[i - 1].data(), 1, zero, C[i].data(), 1);
 
       //transfer previous operators
       for(int j = 0;j < job_cont[i-1].size();++j){
@@ -289,24 +296,24 @@ complex<double> Heisenberg::energy(const MPS< complex<double> > &mps,const Walke
          int output = job_cont[i - 1][j][1];
 
          for(int r = 0;r < 3;++r)
-            blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, loc[i].data(), Rdim, ro[i - 1][input*3 + r].data(), 1, zero, ro[i][output*3 + r].data(), 1);
+            blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[i].data(), Rdim, ro[i - 1][input*3 + r].data(), 1, zero, ro[i][output*3 + r].data(), 1);
 
       }
 
       //start up new operators and close down couples
       for(int r = 0;r < 3;++r){
 
-         blas::gemv(CblasRowMajor, CblasTrans, d, gemv_list[i], one, mps[i].data(), gemv_list[i], walker.gVxyz(i,r).data(), 1, zero, loc[i].data(), 1);
+         blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, mps[i].data(), Global::gemv_list[i], walker.gVxyz(i,r).data(), 1, zero, Global::loc[i].data(), 1);
 
          //start up
-         blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, loc[i].data(), Rdim, I[i - 1].data(), 1, zero, ro[i][3*(no[i] - 1) + r].data(), 1);
+         blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[i].data(), Rdim, I[i - 1].data(), 1, zero, ro[i][3*(no[i] - 1) + r].data(), 1);
 
          //close down
          for(int j = 0;j < job_close[i - 1].size();++j){
 
             int input = job_close[i - 1][j];
 
-            blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, loc[i].data(), Rdim, ro[i - 1][input*3 + r].data(), 1, one, C[i].data(), 1);
+            blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, close_coupling[i - 1][j], Global::loc[i].data(), Rdim, ro[i - 1][input*3 + r].data(), 1, one, C[i].data(), 1);
 
          }
 
@@ -315,16 +322,16 @@ complex<double> Heisenberg::energy(const MPS< complex<double> > &mps,const Walke
    }
 
    //now get the result
-   blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[L - 1].data(), d, walker[L - 1].data(), 1, zero, loc[L - 1].data(), 1);
+   blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[L - 1].data(), d, walker[L - 1].data(), 1, zero, Global::loc[L - 1].data(), 1);
 
-   complex<double> val = blas::dot(d,C[L - 2].data(),1,loc[L - 1].data(),1);
+   complex<double> val = blas::dot(d,C[L - 2].data(),1,Global::loc[L - 1].data(),1);
 
    for(int r = 0;r < 3;++r){
 
-      blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[L - 1].data(), d, walker.gVxyz(L - 1,r).data(), 1, zero, loc[L - 1].data(), 1);
+      blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[L - 1].data(), d, walker.gVxyz(L - 1,r).data(), 1, zero, Global::loc[L - 1].data(), 1);
 
       for(int j = 0;j < no[L - 2];++j)
-         val += blas::dot(d,ro[L - 2][j*3 + r].data(),1,loc[L - 1].data(),1);
+         val += close_coupling[L - 2][j] * blas::dot(d,ro[L - 2][j*3 + r].data(),1,Global::loc[L - 1].data(),1);
 
    }
 
@@ -361,15 +368,4 @@ void Heisenberg::init_storage(const MPS< complex<double> > &mps){
 
    }
 
-   loc.resize(L);
-
-   for(int i = 0;i < L;++i)
-      loc[i].resize(mps[i].shape(1),mps[i].shape(2));
-
-   //make the dimension list for the gemv routine
-   gemv_list.resize(L);
-
-   for(int i = 0;i < L;++i)
-      gemv_list[i] = mps[i].shape(1)*mps[i].shape(2);
-
-}
+ }

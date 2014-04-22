@@ -24,20 +24,40 @@ int Global::d;
 int Global::D;
 bool Global::pbc;
 
-std::vector< ZArray<1> > Global::EO;
+std::vector< ZArray<1> > Global::LO;
+std::vector< ZArray<1> > Global::RO;
+
+vector<int> Global::gemv_list;
+
+vector< ZArray<2> > Global::loc;
 
 /**
  * initialize the storage on dimensions of input MPS
  */
 void Global::init_storage(const MPS< complex<double> > &mps){
 
-   EO.resize(L);
+   LO.resize(L);
+   RO.resize(L);
+
+   for(int i = 0;i < L;++i){
+
+      LO[i].resize(mps[i].shape(2));
+      RO[i].resize(mps[i].shape(1));
+
+   }
+
+   //make the dimension list for the gemv routine
+   gemv_list.resize(L);
 
    for(int i = 0;i < L;++i)
-      EO.resize(mps[i].shape(2));
+      gemv_list[i] = mps[i].shape(1)*mps[i].shape(2);
+
+   loc.resize(L);
+
+   for(int i = 0;i < L;++i)
+      loc[i].resize(mps[i].shape(1),mps[i].shape(2));
 
 }
-
 
 //!function which generates random complex numbers uniformly on a square of side 2
 template<>
