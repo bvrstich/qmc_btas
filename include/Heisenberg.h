@@ -78,6 +78,8 @@ class Heisenberg {
       //!operations to be performed at every site: input
       static vector< vector<int> > job_close;
 
+      static vector<int> gemv_list;
+
 };
 
 #endif

@@ -41,6 +41,8 @@ vector< vector<int*> > Heisenberg::job_cont;
 
 vector< vector<int> > Heisenberg::job_close;
 
+vector<int> Heisenberg::gemv_list;
+
 /**
  * @param d_in physical dimension
  * @param J_in coupling matrix
@@ -258,25 +260,27 @@ complex<double> Heisenberg::energy(const MPS< complex<double> > &mps,const Walke
    complex<double> zero(0.0,0.0);
 
    //first site
-   //Gemv(CblasTrans,one,mps[0],walker[0],zero,I[0]);
    blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[0].data(), d, walker[0].data(), 1, zero, I[0].data(), 1);
 
    for(int r = 0;r < 3;++r)
-      Gemv(CblasTrans,one,mps[0],walker.gVxyz(0,r),zero,ro[0][r]);
+      blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[0].data(), d, walker.gVxyz(0,r).data(), 1, zero, ro[0][r].data(), 1);
 
    C[0] = 0.0;
 
    //middle sites
    for(int i = 1;i < L - 1;++i){
 
+      int Ldim = mps[i].shape(1);
+      int Rdim = mps[i].shape(2);
+
       //continue from previous site:
-      Gemv(CblasTrans,one,mps[i],walker[i],zero,loc[i]);
+      blas::gemv(CblasRowMajor, CblasTrans, d, gemv_list[i], one, mps[i].data(), gemv_list[i], walker[i].data(), 1, zero, loc[i].data(), 1);
 
       //I
-      Gemm(CblasNoTrans,CblasNoTrans,one,I[i - 1],loc[i],zero,I[i]);
+      blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, loc[i].data(), Rdim, I[i - 1].data(), 1, zero, I[i].data(), 1);
 
       //C
-      Gemm(CblasNoTrans,CblasNoTrans,one,C[i - 1],loc[i],zero,C[i]);
+      blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, loc[i].data(), Rdim, C[i - 1].data(), 1, zero, C[i].data(), 1);
 
       //transfer previous operators
       for(int j = 0;j < job_cont[i-1].size();++j){
@@ -285,24 +289,24 @@ complex<double> Heisenberg::energy(const MPS< complex<double> > &mps,const Walke
          int output = job_cont[i - 1][j][1];
 
          for(int r = 0;r < 3;++r)
-            Gemm(CblasNoTrans,CblasNoTrans,one,ro[i - 1][input*3 + r],loc[i],zero,ro[i][output*3 + r]);
+            blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, loc[i].data(), Rdim, ro[i - 1][input*3 + r].data(), 1, zero, ro[i][output*3 + r].data(), 1);
 
       }
 
       //start up new operators and close down couples
       for(int r = 0;r < 3;++r){
 
-         Gemv(CblasTrans,one,mps[i],walker.gVxyz(i,r),zero,loc[i]);
+         blas::gemv(CblasRowMajor, CblasTrans, d, gemv_list[i], one, mps[i].data(), gemv_list[i], walker.gVxyz(i,r).data(), 1, zero, loc[i].data(), 1);
 
          //start up
-         Gemm(CblasNoTrans,CblasNoTrans,one,I[i - 1],loc[i],zero,ro[i][3*(no[i] - 1) + r]);
+         blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, loc[i].data(), Rdim, I[i - 1].data(), 1, zero, ro[i][3*(no[i] - 1) + r].data(), 1);
 
          //close down
          for(int j = 0;j < job_close[i - 1].size();++j){
 
             int input = job_close[i - 1][j];
 
-            Gemm(CblasNoTrans,CblasNoTrans,one,ro[i - 1][input*3 + r],loc[i],one,C[i]);
+            blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, loc[i].data(), Rdim, ro[i - 1][input*3 + r].data(), 1, one, C[i].data(), 1);
 
          }
 
@@ -311,16 +315,16 @@ complex<double> Heisenberg::energy(const MPS< complex<double> > &mps,const Walke
    }
 
    //now get the result
-   Gemv(CblasTrans,one,mps[L - 1],walker[L - 1],zero,loc[L - 1]);
+   blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[L - 1].data(), d, walker[L - 1].data(), 1, zero, loc[L - 1].data(), 1);
 
-   complex<double> val = Dot(C[L - 2],loc[L - 1]);
+   complex<double> val = blas::dot(d,C[L - 2].data(),1,loc[L - 1].data(),1);
 
    for(int r = 0;r < 3;++r){
 
-      Gemv(CblasTrans,one,mps[L - 1],walker.gVxyz(L - 1,r),zero,loc[L - 1]);
+      blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[L - 1].data(), d, walker.gVxyz(L - 1,r).data(), 1, zero, loc[L - 1].data(), 1);
 
       for(int j = 0;j < no[L - 2];++j)
-         val += Dot(ro[L - 2][j*3 + r],loc[L - 1]);
+         val += blas::dot(d,ro[L - 2][j*3 + r].data(),1,loc[L - 1].data(),1);
 
    }
 
@@ -359,7 +363,13 @@ void Heisenberg::init_storage(const MPS< complex<double> > &mps){
 
    loc.resize(L);
 
-   for(int i = 0;i < L - 1;++i)
+   for(int i = 0;i < L;++i)
       loc[i].resize(mps[i].shape(1),mps[i].shape(2));
+
+   //make the dimension list for the gemv routine
+   gemv_list.resize(L);
+
+   for(int i = 0;i < L;++i)
+      gemv_list[i] = mps[i].shape(1)*mps[i].shape(2);
 
 }

@@ -39,6 +39,7 @@ int main(int argc,char *argv[]){
 
    //intialize some storage
    Heisenberg::init_storage(mps);
+   Global::init_storage(mps);
 
    double dtau = 0.01;
    int Nw = 1000;

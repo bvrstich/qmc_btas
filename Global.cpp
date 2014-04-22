@@ -24,6 +24,20 @@ int Global::d;
 int Global::D;
 bool Global::pbc;
 
+std::vector< ZArray<1> > Global::EO;
+
+/**
+ * initialize the storage on dimensions of input MPS
+ */
+void Global::init_storage(const MPS< complex<double> > &mps){
+
+   EO.resize(L);
+
+   for(int i = 0;i < L;++i)
+      EO.resize(mps[i].shape(2));
+
+}
+
 
 //!function which generates random complex numbers uniformly on a square of side 2
 template<>

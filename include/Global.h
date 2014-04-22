@@ -8,6 +8,9 @@
 using std::ostream;
 using std::vector;
 
+template<typename T>
+class MPS;
+
 using namespace btas;
 
 #include "Random.h"
@@ -44,6 +47,11 @@ class Global {
       static int gd();
 
       static const DArray<2> &gJ();
+
+      static void init_storage(const MPS< complex<double> > &);
+
+      //!public storage for contractions: for the overlap
+      static std::vector< ZArray<1> > EO;
 
    private:
 
