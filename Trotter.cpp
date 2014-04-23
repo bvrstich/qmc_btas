@@ -37,6 +37,8 @@ Trotter::Trotter(double dtau){
 
    }
 
+   Global::set_n_trot(n_trot);
+
    //now transform the elements with dtau and the eigenvalues for the propagator to form the transformation V
    V.resize(n_trot,L);
 

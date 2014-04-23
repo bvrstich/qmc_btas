@@ -14,8 +14,12 @@ using std::ofstream;
 using std::endl;
 
 /**
+ * empty constructor
+ */
+Walker::Walker() : std::vector< ZArray<1> >(Global::gL()){ }
+
+/**
  * construct a Walker object
- * @param weight_in input weight
  * @param n_trot number of trotter terms
  */
 Walker::Walker(int n_trot_in) : std::vector< ZArray<1> >(Global::gL()){
@@ -287,8 +291,6 @@ void Walker::propagate(const Propagator &P){
 
    int d = Global::gd();
 
-   ZArray<1> tmp(d);
-
    complex<double> one(1.0,0.0);
    complex<double> zero(0.0,0.0);
 
@@ -296,10 +298,9 @@ void Walker::propagate(const Propagator &P){
 
    for(int i = 0;i < this->size();++i){
 
-      //Gemv(CblasNoTrans,one,P[i],(*this)[i],zero,tmp);
-      blas::gemv(CblasRowMajor,CblasNoTrans, d, d, one, P[i].data(), d, (*this)[i].data(), 1, zero, tmp.data(), 1);
+      blas::gemv(CblasRowMajor,CblasNoTrans, d, d, one, P[i].data(), d, (*this)[i].data(), 1, zero, Global::prov_walker[i].data(), 1);
 
-      (*this)[i] = std::move(tmp);
+      std::swap((*this)[i],Global::prov_walker[i]);
 
    }
 
@@ -384,5 +385,28 @@ void Walker::read(const char *filename){
    for(int i = 0;i < this->size();++i)
       for(int s = 0;s < (*this)[i].shape(0);++s)
          in >> i >> s >> (*this)[i](s);
+
+}
+
+/**
+ * call the constructor for the already constructed object
+ */
+void Walker::allocate(){
+
+   int L = Global::gL(); 
+   int d = Global::gd(); 
+
+   this->n_trot = Global::gn_trot();
+
+   for(int i = 0;i < L;++i)
+      (*this)[i].resize(d);
+
+   Vxyz.resize(3*L);
+
+   for(int i = 0;i < L;++i)
+      for(int r = 0;r < 3;++r)//regular vector
+         Vxyz[3*i + r].resize(d);
+
+   VL.resize(3*n_trot);
 
 }

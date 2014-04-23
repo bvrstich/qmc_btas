@@ -22,6 +22,7 @@ int Global::j2;
 DArray<2> Global::J;
 int Global::d;
 int Global::D;
+int Global::n_trot;
 bool Global::pbc;
 
 std::vector< ZArray<1> > Global::LO;
@@ -30,6 +31,8 @@ std::vector< ZArray<1> > Global::RO;
 vector<int> Global::gemv_list;
 
 vector< ZArray<2> > Global::loc;
+
+Walker Global::prov_walker;
 
 /**
  * initialize the storage on dimensions of input MPS
@@ -56,6 +59,11 @@ void Global::init_storage(const MPS< complex<double> > &mps){
 
    for(int i = 0;i < L;++i)
       loc[i].resize(mps[i].shape(1),mps[i].shape(2));
+
+   prov_walker.resize(L);
+
+   for(int i = 0;i < L;++i)
+      prov_walker[i].resize(d);
 
 }
 
@@ -175,5 +183,33 @@ int Global::gj2() {
 double Global::gJ2() {
 
    return J2;
+
+}
+
+/**
+ * set the number of trotter terms
+ * @param n_trot_in
+ */
+void Global::set_n_trot(int n_trot_in){
+
+   n_trot = n_trot_in;
+
+}
+
+/**
+ * @return the number of trotter terms
+ */
+int Global::gn_trot(){
+
+   return n_trot;
+
+}
+
+/**
+ * allocate the walker
+ */
+void Global::alloc_walker(){
+
+   prov_walker.allocate();
 
 }

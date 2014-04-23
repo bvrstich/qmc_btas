@@ -20,8 +20,11 @@ class Trotter;
 class Walker : public vector< ZArray<1> > {
 
    public:
+
+      //empty contstructor
+      Walker();
    
-      //Constructor copying an MPSstate
+      //Constructor
       Walker(int);
       
       //Constructor copying an entire Walker
@@ -50,11 +53,15 @@ class Walker : public vector< ZArray<1> > {
 
       complex<double> calc_overlap(const MPS< complex<double> > &mps) const;
 
+      void allocate();
+
       void propagate(const Propagator &P);
 
       void normalize();
 
       void fill_xyz();
+
+      void swap();
 
       const ZArray<1> &gVxyz(int,int) const;
 

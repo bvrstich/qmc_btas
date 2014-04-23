@@ -32,6 +32,8 @@ AFQMC::AFQMC(const MPS< complex<double> > &Psi0_in,double dtau_in,int Nw_in){
 
    n_trot = trotter->gn_trot();
 
+   Global::set_n_trot(n_trot);
+
    this->Nw = Nw_in;
 
    SetupWalkers();
@@ -96,6 +98,9 @@ void AFQMC::walk(const int steps){
    cout << "Energy at start = " << EP << endl;
    cout << "---------------------------------------------------------" << endl;
 #endif
+
+   //allocate the walker
+   Global::alloc_walker();
 
    for(int step = 1;step <= steps;step++){
 

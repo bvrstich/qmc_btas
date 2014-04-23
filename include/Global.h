@@ -13,6 +13,8 @@ using std::complex;
 template<typename T>
 class MPS;
 
+class Walker;
+
 using namespace btas;
 
 #include "Random.h"
@@ -52,6 +54,12 @@ class Global {
 
       static void init_storage(const MPS< complex<double> > &);
 
+      static void set_n_trot(int);
+
+      static int gn_trot();
+
+      static void alloc_walker();
+
       //!public storage for contractions: for the overlap
       static std::vector< ZArray<1> > LO;
       static std::vector< ZArray<1> > RO;
@@ -60,6 +68,8 @@ class Global {
       static vector< ZArray<2> > loc;
 
       static vector<int> gemv_list;
+
+      static Walker prov_walker;
 
    private:
 
@@ -71,6 +81,9 @@ class Global {
 
       //!max bond dimension of the trial state
       static int D;
+
+      //!number of trotter terms
+      static int n_trot;
 
       //!coupling matrix of the Hamiltonian
       static DArray<2> J;
