@@ -11,11 +11,11 @@ using std::endl;
 
 #include "include.h"
 
-ZArray<2> Heisenberg::Sx;
+TArray<complex<double>,2> Heisenberg::Sx;
 
-ZArray<2> Heisenberg::Sy;
+TArray<complex<double>,2> Heisenberg::Sy;
 
-ZArray<2> Heisenberg::Sz;
+TArray<complex<double>,2> Heisenberg::Sz;
 
 std::vector< std::vector<int> > Heisenberg::in;
 
@@ -29,11 +29,11 @@ vector< vector<int> > Heisenberg::nc;
 
 int Heisenberg::max_ro;
 
-vector< ZArray<2> > Heisenberg::I;
+vector< TArray<complex<double>,2> > Heisenberg::I;
 
-vector< ZArray<2> > Heisenberg::C;
+vector< TArray<complex<double>,2> > Heisenberg::C;
 
-vector< vector< ZArray<2> > > Heisenberg::ro;
+vector< vector< TArray<complex<double>,2> > > Heisenberg::ro;
 
 vector< vector<int*> > Heisenberg::job_cont;
 
@@ -231,7 +231,7 @@ void Heisenberg::clear(){
 /**
  * @return the Sx operator
  */
-const ZArray<2> &Heisenberg::gSx() {
+const TArray<complex<double>,2> &Heisenberg::gSx() {
 
    return Sx;
 
@@ -240,7 +240,7 @@ const ZArray<2> &Heisenberg::gSx() {
 /**
  * @return the Sy operator
  */
-const ZArray<2> &Heisenberg::gSy() {
+const TArray<complex<double>,2> &Heisenberg::gSy() {
 
    return Sy;
 
@@ -249,7 +249,7 @@ const ZArray<2> &Heisenberg::gSy() {
 /**
  * @return the Sz operator
  */
-const ZArray<2> &Heisenberg::gSz() {
+const TArray<complex<double>,2> &Heisenberg::gSz() {
 
    return Sz;
 

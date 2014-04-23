@@ -23,10 +23,10 @@ Trotter::Trotter(double dtau){
    this->dtau = dtau;
 
    //diagonalize the coupling matrix
-   DArray<1> Jeig;
-   DArray<2> Uv;
+   TArray<double,1> Jeig(L);
+   TArray<double,2> Uv(Global::gJ());
 
-   Syev('V','U',Global::gJ(),Jeig,Uv);
+   lapack::syev(CblasRowMajor, 'V', 'U', L, Uv.data(), L, Jeig.data());
 
    n_trot = 0;
 
@@ -36,8 +36,6 @@ Trotter::Trotter(double dtau){
          n_trot++;
 
    }
-
-   Global::set_n_trot(n_trot);
 
    //now transform the elements with dtau and the eigenvalues for the propagator to form the transformation V
    V.resize(n_trot,L);
@@ -60,10 +58,10 @@ Trotter::Trotter(double dtau){
    }
 
    //Sx
-   DArray<1> eig;
-   ZArray<2> U;
+   TArray<double,1> eig(d);
+   TArray<complex<double>,2> U(Heisenberg::gSx());
 
-   Heev('V', 'U', Heisenberg::gSx(), eig, U);
+   lapack::heev(CblasRowMajor, 'V', 'U', d, U.data(), d, eig.data());
 
    Mx.resize(d);
 
@@ -78,7 +76,8 @@ Trotter::Trotter(double dtau){
    }
 
    //Sy
-   Heev('V', 'U', Heisenberg::gSy(), eig, U);
+   U = Heisenberg::gSy();
+   lapack::heev(CblasRowMajor, 'V', 'U', d, U.data(), d, eig.data());
 
    My.resize(d);
 
@@ -148,7 +147,7 @@ double Trotter::gdtau() const {
 /**
  * @return the auxiliary field matrix
  */
-const ZArray<2> &Trotter::gV() const {
+const TArray<complex<double>,2> &Trotter::gV() const {
 
    return V;
 
@@ -166,7 +165,7 @@ int Trotter::gn_trot() const {
 /**
  * @return the eigenvector 'matrix' |Sx><Sx| corresponding to the i'th eigenvalue ranked from small to large 
  */
-const ZArray<2> &Trotter::gMx(int i) const {
+const TArray<complex<double>,2> &Trotter::gMx(int i) const {
 
    return Mx[i];
 
@@ -175,7 +174,7 @@ const ZArray<2> &Trotter::gMx(int i) const {
 /**
  * @return the eigenvector 'matrix' |Sy><Sy| corresponding to the i'th eigenvalue ranked from small to large 
  */
-const ZArray<2> &Trotter::gMy(int i) const {
+const TArray<complex<double>,2> &Trotter::gMy(int i) const {
 
    return My[i];
 
@@ -184,7 +183,7 @@ const ZArray<2> &Trotter::gMy(int i) const {
 /**
  * @return the eigenvector 'matrix' |Sz><Sz| corresponding to the i'th eigenvalue ranked from small to large 
  */
-const ZArray<2> &Trotter::gMz(int i) const {
+const TArray<complex<double>,2> &Trotter::gMz(int i) const {
 
    return Mz[i];
 

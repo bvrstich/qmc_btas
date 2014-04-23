@@ -16,10 +16,10 @@ using std::complex;
 #include "include.h"
 
 /**
- * standard constructor: sets the size of vector, and initializes the QSZArray objects to the correct quantumnumbers and dimensions
+ * standard constructor: sets the size of vector, and initializes the ZArray objects to the correct quantumnumbers and dimensions
  * @param L size
  */
-Propagator::Propagator() : vector< ZArray<2> > (Global::gL()) {
+Propagator::Propagator() : vector< TArray<complex<double>,2> > (Global::gL()) {
 
    x = 0.0;
    k = 0;
@@ -34,7 +34,7 @@ Propagator::Propagator() : vector< ZArray<2> > (Global::gL()) {
  * copy constructor
  * @param prop_copy input Propagator object
  */
-Propagator::Propagator(const Propagator &prop_copy) : vector< ZArray<2> > (prop_copy) {
+Propagator::Propagator(const Propagator &prop_copy) : vector< TArray<complex<double>,2> > (prop_copy) {
 
    x = prop_copy.gx();
    k = prop_copy.gk();

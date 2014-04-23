@@ -10,12 +10,12 @@ using std::ostream;
 namespace coupling {
 
    /**
-    * fill the DArray<double,2> object J with the coupling matrix for a 1D J1J2 model
+    * fill the TArray<double,double,2> object J with the coupling matrix for a 1D J1J2 model
     * @param pbc flag for periodic or open boundary conditions
     * @param J2 the J2 interaction strength as a function of J1
     * @param J the DArray object, will be filled with correct numbers on output
     */
-   void J1J2_1D(bool pbc,double J2,DArray<2> &J){
+   void J1J2_1D(bool pbc,double J2,TArray<double,2> &J){
 
       int L = J.shape(0);
 
@@ -59,9 +59,9 @@ namespace coupling {
     * set the coupling matrix for the J1J2 model with J2 given as argument in units of J1
     * @param pbc periodic boundary conditions or not
     * @param J2 coupling strength
-    * @param J coupling matrix, DArray<2> so matrix 
+    * @param J coupling matrix, TArray<double,2> so matrix 
     */
-   void J1J2_2D(bool pbc,double J2,DArray<2> &J){
+   void J1J2_2D(bool pbc,double J2,TArray<double,2> &J){
 
       J = 0.0;
 

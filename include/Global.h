@@ -50,26 +50,23 @@ class Global {
 
       static int gd();
 
-      static const DArray<2> &gJ();
+      static const TArray<double,2> &gJ();
 
       static void init_storage(const MPS< complex<double> > &);
 
-      static void set_n_trot(int);
-
-      static int gn_trot();
-
-      static void alloc_walker();
-
       //!public storage for contractions: for the overlap
-      static std::vector< ZArray<1> > LO;
-      static std::vector< ZArray<1> > RO;
+      static std::vector< TArray<complex<double>,1> > LO;
+      static std::vector< TArray<complex<double>,1> > RO;
 
       //!some storage: local overlap
-      static vector< ZArray<2> > loc;
+      static vector< TArray<complex<double>,2> > loc;
 
       static vector<int> gemv_list;
 
-      static Walker prov_walker;
+      static Walker backup_walker;
+
+      //!intermediate storage for calculation of auxiliary operator expectation values
+      static std::vector< std::vector< complex<double> > > auxvec;
 
    private:
 
@@ -82,11 +79,8 @@ class Global {
       //!max bond dimension of the trial state
       static int D;
 
-      //!number of trotter terms
-      static int n_trot;
-
       //!coupling matrix of the Hamiltonian
-      static DArray<2> J;
+      static TArray<double,2> J;
 
       //!x dimension
       static int Lx;

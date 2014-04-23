@@ -45,7 +45,7 @@ int main(int argc,char *argv[]){
    int Nw = 1000;
 
    AFQMC afqmc(mps,dtau,Nw);
-   afqmc.walk(10000);
+   afqmc.walk(10);
 
    Heisenberg::clear();
 

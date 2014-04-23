@@ -6,9 +6,6 @@
 #include <complex>
 #include <vector>
 
-#include <btas/DENSE/DArray.h>
-#include <btas/DENSE/ZArray.h>
-
 class Trotter {
 
    public:
@@ -24,20 +21,20 @@ class Trotter {
       
       double gdtau() const;
       
-      const ZArray<2> &gV() const;
+      const TArray<complex<double>,2> &gV() const;
       
       int gn_trot() const;
 
-      const ZArray<2> &gMx(int) const;
+      const TArray<complex<double>,2> &gMx(int) const;
 
-      const ZArray<2> &gMy(int) const;
+      const TArray<complex<double>,2> &gMy(int) const;
 
-      const ZArray<2> &gMz(int) const;
+      const TArray<complex<double>,2> &gMz(int) const;
 
    private:
    
       //!the transformation matrix
-      ZArray<2> V;
+      TArray<complex<double>,2> V;
 
       //!the number of non-zero eigenvalues of the coupling matrix: equals the number of trotter product terms
       int n_trot;
@@ -46,13 +43,13 @@ class Trotter {
       double dtau;
 
       //!eigenvector of Sx |Sx><Sx|
-      std::vector< ZArray<2> > Mx;
+      std::vector< TArray<complex<double>,2> > Mx;
       
       //!eigenvector of Sy |Sy><Sy|
-      std::vector< ZArray<2> > My;
+      std::vector< TArray<complex<double>,2> > My;
 
       //!eigenvector of Sz |Sz><Sz|
-      std::vector< ZArray<2> > Mz;
+      std::vector< TArray<complex<double>,2> > Mz;
 
 };
 

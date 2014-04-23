@@ -32,8 +32,6 @@ AFQMC::AFQMC(const MPS< complex<double> > &Psi0_in,double dtau_in,int Nw_in){
 
    n_trot = trotter->gn_trot();
 
-   Global::set_n_trot(n_trot);
-
    this->Nw = Nw_in;
 
    SetupWalkers();
@@ -99,9 +97,6 @@ void AFQMC::walk(const int steps){
    cout << "---------------------------------------------------------" << endl;
 #endif
 
-   //allocate the walker
-   Global::alloc_walker();
-
    for(int step = 1;step <= steps;step++){
 
       //Propagate the walkers of each rank separately --> no MPI in that function
@@ -158,8 +153,13 @@ void AFQMC::walk(const int steps){
 double AFQMC::Propagate(){
 
    double sum = 0.0;
+   double width = sqrt(2.0/dtau);
+
+   int num_rej = 0;
 
    for(int i = 0;i < walker.size();i++){
+
+      Global::backup_walker.copy_essential(*walker[i]);
 
       //now loop over the auxiliary fields:
       for(int k = 0;k < n_trot;++k)
@@ -175,7 +175,7 @@ double AFQMC::Propagate(){
             //and fill the propagator
             P->fill(*trotter);
 
-            //and apply it to the walker
+            //and apply it to the walker:
             walker[i]->propagate(*P);
 
          }
@@ -190,11 +190,23 @@ double AFQMC::Propagate(){
 
       complex<double> EL = walker[i]->gEL();
 
-      double scale = exp(-0.5 * dtau * std::real(EL + prev_EL));
+      if( (std::real(EL) < std::real(prev_EL) - width) || (std::real(EL) > std::real(prev_EL) + width) ){//very rare event, will cause numerical unstability
 
-      walker[i]->multWeight(scale);
+         num_rej++;
 
-      walker[i]->sVL(*trotter,Psi0);
+         //copy the state back!
+         walker[i]->copy_essential(Global::backup_walker);
+
+      }
+      else{//go on
+
+         double scale = exp(-0.5 * dtau * std::real(EL + prev_EL));
+
+         walker[i]->multWeight(scale);
+
+         walker[i]->sVL(*trotter,Psi0);
+
+      }
 
       sum += walker[i]->gWeight();
 

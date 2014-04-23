@@ -16,7 +16,7 @@ using std::complex;
  * This class Propagator is a class written for the construction and the action of the imaginary time propagator 
  * on a MPS walker.
  */
-class Propagator : public vector< ZArray<2> > {
+class Propagator : public vector< TArray< complex<double> , 2 > > {
 
    public:
       

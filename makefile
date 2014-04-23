@@ -28,16 +28,10 @@ OBJ	= $(CPPSRC:.cpp=.o)
 
 BRIGHT_ROOT= .
 
-BOOSTLIB= -lboost_serialization
-
-BTASINC=-I/home/bright/btas/include
-MPSINC=-I/home/bright/bestanden/programmas/mpsxx
-BTASLIB= /home/bright/btas/lib
-
-INCLUDE = ./include $(BTASINC) $(MPSINC)
+INCLUDE = -I./include
 
 #LIBS= -lpthread -lmkl_intel_lp64 -lmkl_sequential -lmkl_core $(BOOSTLIB) $(BTASLIB)/libbtas.a 
-LIBS= -lblas -llapacke $(BOOSTLIB) $(BTASLIB)/libbtas.a
+LIBS= -lblas -llapacke 
 
 CC	= gcc
 CXX	= g++
@@ -45,7 +39,7 @@ CXX	= g++
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
-CFLAGS	= -std=c++11 -I$(INCLUDE) -D_HAS_CBLAS -D_HAS_LAPACKE
+CFLAGS	= -std=c++11 $(INCLUDE) -D_HAS_CBLAS -D_HAS_LAPACKE
 LDFLAGS	= -std=c++11
 
 # =============================================================================

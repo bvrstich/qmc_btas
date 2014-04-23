@@ -17,7 +17,7 @@ class Trotter;
 /**
  * class definition of Walker, made to describe the product state walkers. An array of L size-2 vector. Each site represents a rotation of the spin.
  */
-class Walker : public vector< ZArray<1> > {
+class Walker : public vector< TArray<complex<double>,1> > {
 
    public:
 
@@ -47,15 +47,13 @@ class Walker : public vector< ZArray<1> > {
 
       complex<double> gVL(int,int) const;
 
-      const std::vector< std::vector< complex<double> > > &gauxvec() const;
-
       void fill_Random();
 
       complex<double> calc_overlap(const MPS< complex<double> > &mps) const;
 
-      void allocate();
-
       void propagate(const Propagator &P);
+
+      void copy_essential(const Walker &);
 
       void normalize();
 
@@ -63,7 +61,7 @@ class Walker : public vector< ZArray<1> > {
 
       void swap();
 
-      const ZArray<1> &gVxyz(int,int) const;
+      const TArray<complex<double>,1> &gVxyz(int,int) const;
 
       //Set the overlap with the trial wfn
       void sOverlap(const MPS< complex<double> > &Psi0);
@@ -94,11 +92,8 @@ class Walker : public vector< ZArray<1> > {
       //!local auxiliary operators: <PsiT|v|phi>/<PsiT|phi>
       std::vector< complex<double> > VL;
 
-      //!intermediate storage for calculation of auxiliary operator expectation values
-      std::vector< std::vector< complex<double> > > auxvec;
-
       //!Sx,Sy and Sz operator application to walker
-      std::vector< ZArray<1> > Vxyz;
+      std::vector< TArray<complex<double>,1> > Vxyz;
       
       //The walker weight
       double weight;

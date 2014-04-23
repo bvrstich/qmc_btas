@@ -16,13 +16,13 @@ using std::endl;
 /**
  * empty constructor
  */
-Walker::Walker() : std::vector< ZArray<1> >(Global::gL()){ }
+Walker::Walker() : std::vector< TArray<complex<double>,1> >(Global::gL()){ }
 
 /**
  * construct a Walker object
  * @param n_trot number of trotter terms
  */
-Walker::Walker(int n_trot_in) : std::vector< ZArray<1> >(Global::gL()){
+Walker::Walker(int n_trot_in) : std::vector< TArray<complex<double>,1> >(Global::gL()){
 
    int L = Global::gL(); 
    int d = Global::gd(); 
@@ -40,17 +40,12 @@ Walker::Walker(int n_trot_in) : std::vector< ZArray<1> >(Global::gL()){
 
    VL.resize(3*n_trot);
 
-   auxvec.resize(L);
-
-   for(int i = 0;i < L;++i)//for x,y and z components
-      auxvec[i].resize(3);
-
 }
 
 /**
  * copy constructor
  */
-Walker::Walker(const Walker &walker) : std::vector< ZArray<1> >(walker) {
+Walker::Walker(const Walker &walker) : std::vector< TArray<complex<double>,1> >(walker) {
 
    this->weight = walker.gWeight();
 
@@ -58,7 +53,6 @@ Walker::Walker(const Walker &walker) : std::vector< ZArray<1> >(walker) {
    overlap = walker.gOverlap();
    EL = walker.gEL();
    VL = walker.gVL();
-   auxvec = walker.gauxvec();
    Vxyz = walker.Vxyz;
 
 }
@@ -110,15 +104,6 @@ complex<double> Walker::gEL() const{
 const std::vector< complex<double> > &Walker::gVL() const{
 
    return VL; 
-
-}
-
-/** 
- * @return intermediate object for calcuation of expectation values of auxiliary fields
- */
-const std::vector< std::vector< complex<double> > > &Walker::gauxvec() const{
-
-   return auxvec; 
 
 }
 
@@ -211,14 +196,14 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
 
       blas::gemv(CblasRowMajor, CblasTrans, d, d, one, Psi0[0].data(), d, Vxyz[r].data(), 1, zero, Global::loc[0].data(), 1);
 
-      auxvec[0][r] = blas::dot(d,Global::loc[0].data(),1,Global::RO[1].data(),1);
+      Global::auxvec[0][r] = blas::dot(d,Global::loc[0].data(),1,Global::RO[1].data(),1);
 
    }
 
    //make the left operator
    blas::gemv(CblasRowMajor, CblasTrans, d, d, one, Psi0[0].data(), d, (*this)[0].data(), 1, zero, Global::LO[0].data(), 1);
 
-   //calculate auxvec for middle sites
+   //calculate Global::auxvec for middle sites
    for(int i = 1;i < L - 1;++i){
 
       int Ldim = Psi0[i].shape(1);
@@ -230,7 +215,7 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
 
          blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[i].data(), Rdim, Global::LO[i - 1].data(), 1, zero, Global::LO[i].data(), 1);
 
-         auxvec[i][r] = blas::dot(Rdim,Global::LO[i].data(),1,Global::RO[i + 1].data(),1);
+         Global::auxvec[i][r] = blas::dot(Rdim,Global::LO[i].data(),1,Global::RO[i + 1].data(),1);
 
       }
 
@@ -246,7 +231,7 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
 
       blas::gemv(CblasRowMajor, CblasTrans, d, d, one, Psi0[L - 1].data(), d, Vxyz[(L - 1)*3 + r].data(), 1, zero, Global::loc[L - 1].data(), 1);
 
-      auxvec[L - 1][r] = blas::dot(d,Global::LO[L - 2].data(),1,Global::loc[L - 1].data(),1);
+      Global::auxvec[L - 1][r] = blas::dot(d,Global::LO[L - 2].data(),1,Global::loc[L - 1].data(),1);
 
    }
 
@@ -254,10 +239,10 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
    for(int k = 0;k < n_trot;++k)
       for(int r = 0;r < 3;++r){
 
-         VL[r*n_trot + k] = auxvec[0][r] * trotter.gV()(k,0);
+         VL[r*n_trot + k] = Global::auxvec[0][r] * trotter.gV()(k,0);
 
          for(int i = 1;i < L;++i)
-            VL[r*n_trot + k] += auxvec[i][r] * trotter.gV()(k,i);
+            VL[r*n_trot + k] += Global::auxvec[i][r] * trotter.gV()(k,i);
 
          VL[r*n_trot + k] /= overlap;
 
@@ -296,11 +281,13 @@ void Walker::propagate(const Propagator &P){
 
    enum {j,k,l,m};
 
+   TArray<complex<double>,1> tmp(d);
+
    for(int i = 0;i < this->size();++i){
 
-      blas::gemv(CblasRowMajor,CblasNoTrans, d, d, one, P[i].data(), d, (*this)[i].data(), 1, zero, Global::prov_walker[i].data(), 1);
+      blas::gemv(CblasRowMajor,CblasNoTrans, d, d, one, P[i].data(), d, (*this)[i].data(), 1, zero, tmp.data(), 1);
 
-      std::swap((*this)[i],Global::prov_walker[i]);
+      (*this)[i] = std::move(tmp);
 
    }
 
@@ -330,8 +317,15 @@ void Walker::fill_Random(){
  */
 void Walker::normalize(){
 
-   for(int i = 0;i < this->size();++i)
-      Normalize( (*this)[i] );
+   int d = Global::gd();
+
+   for(int i = 0;i < this->size();++i){
+
+      double nrm = blas::nrm2(d, (*this)[i].data(), 1);
+
+      blas::scal(d, static_cast< complex<double> >(1.0/nrm), (*this)[i].data(), 1);
+
+   }
 
 }
 
@@ -354,12 +348,13 @@ void Walker::fill_xyz() {
    complex<double> zero(0.0,0.0);
 
    int L = this->size();
+   int d = Global::gd();
 
    for(int i = 0;i < L;++i){
 
-      Gemv(CblasNoTrans,one,Heisenberg::gSx(),(*this)[i],zero,Vxyz[i*3]);
-      Gemv(CblasNoTrans,one,Heisenberg::gSy(),(*this)[i],zero,Vxyz[i*3 + 1]);
-      Gemv(CblasNoTrans,one,Heisenberg::gSz(),(*this)[i],zero,Vxyz[i*3 + 2]);
+      blas::gemv(CblasRowMajor,CblasNoTrans, d, d, one, Heisenberg::gSx().data(), d, (*this)[i].data(), 1, zero, Vxyz[i*3].data(), 1);
+      blas::gemv(CblasRowMajor,CblasNoTrans, d, d, one, Heisenberg::gSy().data(), d, (*this)[i].data(), 1, zero, Vxyz[i*3 + 1].data(), 1);
+      blas::gemv(CblasRowMajor,CblasNoTrans, d, d, one, Heisenberg::gSz().data(), d, (*this)[i].data(), 1, zero, Vxyz[i*3 + 2].data(), 1);
 
    }
 
@@ -368,7 +363,7 @@ void Walker::fill_xyz() {
 /**
  * @return the xyz vector on site [i] of type r = 0,1,2 (x,y,z)
  */
-const ZArray<1> &Walker::gVxyz(int i,int r) const {
+const TArray<complex<double>,1> &Walker::gVxyz(int i,int r) const {
 
    return Vxyz[3*i + r];
 
@@ -389,24 +384,19 @@ void Walker::read(const char *filename){
 }
 
 /**
- * call the constructor for the already constructed object
+ * copy the necessary information of a Walker object into this
+ * @param walker_copy input Walker
  */
-void Walker::allocate(){
+void Walker::copy_essential(const Walker &walker_copy){
 
-   int L = Global::gL(); 
-   int d = Global::gd(); 
+   EL = walker_copy.gEL();
+   overlap = walker_copy.gOverlap();
+   weight = walker_copy.gWeight();
 
-   this->n_trot = Global::gn_trot();
-
-   for(int i = 0;i < L;++i)
-      (*this)[i].resize(d);
-
-   Vxyz.resize(3*L);
+   int L = Global::gL();
+   int d = Global::gd();
 
    for(int i = 0;i < L;++i)
-      for(int r = 0;r < 3;++r)//regular vector
-         Vxyz[3*i + r].resize(d);
-
-   VL.resize(3*n_trot);
+      blas::copy(d, walker_copy[i].data(), 1, (*this)[i].data(), 1);
 
 }

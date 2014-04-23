@@ -140,45 +140,6 @@ int MPS<T>::gD() const {
 
 }
 
-/**
- * scale the MPS with a constant factor
- * @param alpha scalingfactor
- */
-template<>
-void MPS<double>::scal(double alpha){
-
-   int sign;
-
-   if(alpha > 0)
-      sign = 1;
-   else
-      sign = -1;
-
-   alpha = pow(fabs(alpha),1.0/(double)this->size());
-
-   Scal(sign * alpha,(*this)[0]);
-
-   for(int i = 1;i < this->size();++i)
-      Scal(alpha,(*this)[i]);
-
-}
-
-/**
- * scale the MPS with a constant factor
- * @param alpha scalingfactor
- */
-template<>
-void MPS< complex<double> >::scal(complex<double> alpha){
-
-   alpha = pow(fabs(alpha),1.0/(complex<double>)this->size());
-
-   Scal(alpha,(*this)[0]);
-
-   for(int i = 1;i < this->size();++i)
-      Scal(alpha,(*this)[i]);
-
-}
-
 template MPS<double>::MPS();
 template MPS< complex<double> >::MPS();
 
