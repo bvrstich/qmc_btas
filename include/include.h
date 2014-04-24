@@ -8,6 +8,8 @@
 #include <btas/DENSE/BLAS_STL_vector.h>
 #include <btas/DENSE/TArray.h>
 
+#include <omp.h>
+
 #include "Random.h"
 #include "Global.h"
 #include "MPS.h"

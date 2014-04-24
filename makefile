@@ -30,17 +30,17 @@ BRIGHT_ROOT= .
 
 INCLUDE = -I./include
 
-#LIBS= -lpthread -lmkl_intel_lp64 -lmkl_sequential -lmkl_core $(BOOSTLIB) $(BTASLIB)/libbtas.a 
-LIBS= -lblas -llapacke 
+LIBS= -lpthread -lmkl_intel_lp64 -lmkl_sequential -lmkl_core
+#LIBS= -lblas -llapacke 
 
-CC	= gcc
-CXX	= g++
+CC	= icc
+CXX	= icpc
 
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
-CFLAGS	= -std=c++11 $(INCLUDE) -D_HAS_CBLAS -D_HAS_LAPACKE
-LDFLAGS	= -std=c++11
+CFLAGS	= -std=c++11 $(INCLUDE) -D_HAS_CBLAS -D_HAS_INTEL_MKL -openmp -O3 -ipo
+LDFLAGS	= -std=c++11 -openmp -O3 -ipo
 
 # =============================================================================
 #   Targets & Rules

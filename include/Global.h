@@ -54,19 +54,23 @@ class Global {
 
       static void init_storage(const MPS< complex<double> > &);
 
+      static void clear();
+
       //!public storage for contractions: for the overlap
-      static std::vector< TArray<complex<double>,1> > LO;
-      static std::vector< TArray<complex<double>,1> > RO;
+      static vector< TArray<complex<double>,1> > LO;
+      static vector< TArray<complex<double>,1> > RO;
 
       //!some storage: local overlap
       static vector< TArray<complex<double>,2> > loc;
 
       static vector<int> gemv_list;
 
-      static Walker backup_walker;
+      static vector< Walker > backup_walker;
 
       //!intermediate storage for calculation of auxiliary operator expectation values
-      static std::vector< std::vector< complex<double> > > auxvec;
+      static vector< vector< complex<double> > > auxvec;
+
+      static int gomp_num_threads();
 
    private:
 
@@ -96,6 +100,9 @@ class Global {
 
       //!for output to files
       static int j2;
+
+      //!omp stuff
+      static int omp_num_threads;
 
 };
 

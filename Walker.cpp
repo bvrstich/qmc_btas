@@ -115,23 +115,29 @@ complex<double> Walker::calc_overlap(const MPS< complex<double> > &mps) const {
    int L = Global::gL();
    int d = Global::gd();
 
+#ifdef _OPENMP
+   int myID = omp_get_thread_num();
+#else
+   int myID = 0;
+#endif
+
    complex<double> one(1.0,0.0);
    complex<double> zero(0.0,0.0);
 
-   blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[0].data(), d, (*this)[0].data(), 1, zero, Global::LO[0].data(), 1);
+   blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[0].data(), d, (*this)[0].data(), 1, zero, Global::LO[myID*L + 0].data(), 1);
 
    for(int i = 1;i < L;++i){
 
       int Ldim = mps[i].shape(1);
       int Rdim = mps[i].shape(2);
 
-      blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, mps[i].data(), Global::gemv_list[i], (*this)[i].data(), 1, zero, Global::loc[i].data(), 1);
+      blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, mps[i].data(), Global::gemv_list[i], (*this)[i].data(), 1, zero, Global::loc[myID*L + i].data(), 1);
 
-      blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[i].data(), Rdim, Global::LO[i - 1].data(), 1, zero, Global::LO[i].data(), 1);
+      blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[myID*L + i].data(), Rdim, Global::LO[myID*L + i - 1].data(), 1, zero, Global::LO[myID*L + i].data(), 1);
 
    }
 
-   return Global::LO[L - 1](0);
+   return Global::LO[myID*L + L - 1](0);
 
 }
 
@@ -175,33 +181,39 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
    int L = Global::gL();
    int d = Global::gd();
 
+#ifdef _OPENMP
+   int myID = omp_get_thread_num();
+#else
+   int myID = 0;
+#endif
+
    //start by constructing renormalized operator for overlap of Psi0 and walker state
 
    //last site
-   blas::gemv(CblasRowMajor, CblasTrans, d, d, one, Psi0[L - 1].data(), d, (*this)[L - 1].data(), 1, zero, Global::RO[L - 1].data(), 1);
+   blas::gemv(CblasRowMajor, CblasTrans, d, d, one, Psi0[L - 1].data(), d, (*this)[L - 1].data(), 1, zero, Global::RO[myID*L + L - 1].data(), 1);
 
    for(int i = L - 2;i > 0;--i){
 
       int Ldim = Psi0[i].shape(1);
       int Rdim = Psi0[i].shape(2);
 
-      blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, Psi0[i].data(), Global::gemv_list[i], (*this)[i].data(), 1, zero, Global::loc[i].data(), 1);
+      blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, Psi0[i].data(), Global::gemv_list[i], (*this)[i].data(), 1, zero, Global::loc[myID*L + i].data(), 1);
 
-      blas::gemv(CblasRowMajor, CblasNoTrans, Ldim, Rdim, one, Global::loc[i].data(), Rdim, Global::RO[i + 1].data(), 1, zero, Global::RO[i].data(), 1);
+      blas::gemv(CblasRowMajor, CblasNoTrans, Ldim, Rdim, one, Global::loc[myID*L + i].data(), Rdim, Global::RO[myID*L + i + 1].data(), 1, zero, Global::RO[myID*L + i].data(), 1);
 
    }
 
    //first site = 0
    for(int r = 0;r < 3;++r){
 
-      blas::gemv(CblasRowMajor, CblasTrans, d, d, one, Psi0[0].data(), d, Vxyz[r].data(), 1, zero, Global::loc[0].data(), 1);
+      blas::gemv(CblasRowMajor, CblasTrans, d, d, one, Psi0[0].data(), d, Vxyz[r].data(), 1, zero, Global::loc[myID*L + 0].data(), 1);
 
-      Global::auxvec[0][r] = blas::dot(d,Global::loc[0].data(),1,Global::RO[1].data(),1);
+      Global::auxvec[myID*L + 0][r] = blas::dot(d,Global::loc[myID*L + 0].data(),1,Global::RO[myID*L + 1].data(),1);
 
    }
 
    //make the left operator
-   blas::gemv(CblasRowMajor, CblasTrans, d, d, one, Psi0[0].data(), d, (*this)[0].data(), 1, zero, Global::LO[0].data(), 1);
+   blas::gemv(CblasRowMajor, CblasTrans, d, d, one, Psi0[0].data(), d, (*this)[0].data(), 1, zero, Global::LO[myID*L + 0].data(), 1);
 
    //calculate Global::auxvec for middle sites
    for(int i = 1;i < L - 1;++i){
@@ -211,27 +223,27 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
 
       for(int r = 0;r < 3;++r){
 
-         blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, Psi0[i].data(), Global::gemv_list[i], Vxyz[i*3 + r].data(), 1, zero, Global::loc[i].data(), 1);
+         blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, Psi0[i].data(), Global::gemv_list[i], Vxyz[i*3 + r].data(), 1, zero, Global::loc[myID*L + i].data(), 1);
 
-         blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[i].data(), Rdim, Global::LO[i - 1].data(), 1, zero, Global::LO[i].data(), 1);
+         blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[myID*L + i].data(), Rdim, Global::LO[myID*L + i - 1].data(), 1, zero, Global::LO[myID*L + i].data(), 1);
 
-         Global::auxvec[i][r] = blas::dot(Rdim,Global::LO[i].data(),1,Global::RO[i + 1].data(),1);
+         Global::auxvec[myID*L + i][r] = blas::dot(Rdim,Global::LO[myID*L + i].data(),1,Global::RO[myID*L + i + 1].data(),1);
 
       }
 
       //make the left operator
-      blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, Psi0[i].data(), Global::gemv_list[i], (*this)[i].data(), 1, zero, Global::loc[i].data(), 1);
+      blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, Psi0[i].data(), Global::gemv_list[i], (*this)[i].data(), 1, zero, Global::loc[myID*L + i].data(), 1);
 
-      blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[i].data(), Rdim, Global::LO[i - 1].data(), 1, zero, Global::LO[i].data(), 1);
+      blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[myID*L + i].data(), Rdim, Global::LO[myID*L + i - 1].data(), 1, zero, Global::LO[myID*L + i].data(), 1);
 
    }
 
    //last site = L-1
    for(int r = 0;r < 3;++r){
 
-      blas::gemv(CblasRowMajor, CblasTrans, d, d, one, Psi0[L - 1].data(), d, Vxyz[(L - 1)*3 + r].data(), 1, zero, Global::loc[L - 1].data(), 1);
+      blas::gemv(CblasRowMajor, CblasTrans, d, d, one, Psi0[L - 1].data(), d, Vxyz[(L - 1)*3 + r].data(), 1, zero, Global::loc[myID*L + L - 1].data(), 1);
 
-      Global::auxvec[L - 1][r] = blas::dot(d,Global::LO[L - 2].data(),1,Global::loc[L - 1].data(),1);
+      Global::auxvec[myID*L + L - 1][r] = blas::dot(d,Global::LO[myID*L + L - 2].data(),1,Global::loc[myID*L + L - 1].data(),1);
 
    }
 
@@ -239,10 +251,10 @@ void Walker::sVL(const Trotter &trotter,const MPS< complex<double> > &Psi0){
    for(int k = 0;k < n_trot;++k)
       for(int r = 0;r < 3;++r){
 
-         VL[r*n_trot + k] = Global::auxvec[0][r] * trotter.gV()(k,0);
+         VL[r*n_trot + k] = Global::auxvec[myID*L + 0][r] * trotter.gV()(k,0);
 
          for(int i = 1;i < L;++i)
-            VL[r*n_trot + k] += Global::auxvec[i][r] * trotter.gV()(k,i);
+            VL[r*n_trot + k] += Global::auxvec[myID*L + i][r] * trotter.gV()(k,i);
 
          VL[r*n_trot + k] /= overlap;
 

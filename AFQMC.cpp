@@ -36,7 +36,10 @@ AFQMC::AFQMC(const MPS< complex<double> > &Psi0_in,double dtau_in,int Nw_in){
 
    SetupWalkers();
 
-   P = new Propagator();
+   P = new Propagator * [Global::gomp_num_threads()];
+
+   for(int i = 0;i < Global::gomp_num_threads();++i)
+      P[i] = new Propagator();
 
 }
 
@@ -46,7 +49,11 @@ AFQMC::~AFQMC(){
       delete walker[i];
 
    delete trotter;
-   delete P;
+
+   for(int i = 0;i < Global::gomp_num_threads();++i)
+      delete P[i];
+
+   delete [] P;
 
 }
 
@@ -157,9 +164,16 @@ double AFQMC::Propagate(){
 
    int num_rej = 0;
 
+#pragma omp parallel for reduction(+: sum,num_rej)
    for(int i = 0;i < walker.size();i++){
 
-      Global::backup_walker.copy_essential(*walker[i]);
+#ifdef _OPENMP
+   int myID = omp_get_thread_num();
+#else
+   int myID = 0;
+#endif
+
+      Global::backup_walker[myID].copy_essential(*walker[i]);
 
       //now loop over the auxiliary fields:
       for(int k = 0;k < n_trot;++k)
@@ -170,13 +184,13 @@ double AFQMC::Propagate(){
             complex<double> shift = walker[i]->gVL(k,r);
 
             //set the values
-            P->set(x + shift,k,r);
+            P[myID]->set(x + shift,k,r);
 
             //and fill the propagator
-            P->fill(*trotter);
+            P[myID]->fill(*trotter);
 
             //and apply it to the walker:
-            walker[i]->propagate(*P);
+            walker[i]->propagate(*P[myID]);
 
          }
 
@@ -195,7 +209,7 @@ double AFQMC::Propagate(){
          num_rej++;
 
          //copy the state back!
-         walker[i]->copy_essential(Global::backup_walker);
+         walker[i]->copy_essential(Global::backup_walker[myID]);
 
       }
       else{//go on

@@ -27,7 +27,7 @@ int main(int argc,char *argv[]){
    int D = atoi(argv[3]);
    int j2 = atoi(argv[4]);
 
-   Global::init(L,L,j2,d,D,true);
+   Global::init(L,L,j2,d,D,false);
 
    Heisenberg::init();
 
@@ -42,10 +42,10 @@ int main(int argc,char *argv[]){
    Global::init_storage(mps);
 
    double dtau = 0.01;
-   int Nw = 1000;
+   int Nw = 100;
 
    AFQMC afqmc(mps,dtau,Nw);
-   afqmc.walk(10);
+   afqmc.walk(100);
 
    Heisenberg::clear();
 

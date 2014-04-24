@@ -263,16 +263,22 @@ complex<double> Heisenberg::energy(const MPS< complex<double> > &mps,const Walke
    int L = Global::gL();
    int d = Global::gd();
 
+#ifdef _OPENMP
+   int myID = omp_get_thread_num();
+#else
+   int myID = 0;
+#endif
+
    complex<double> one(1.0,0.0);
    complex<double> zero(0.0,0.0);
 
    //first site
-   blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[0].data(), d, walker[0].data(), 1, zero, I[0].data(), 1);
+   blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[0].data(), d, walker[0].data(), 1, zero, I[myID*(L - 1) + 0].data(), 1);
 
    for(int r = 0;r < 3;++r)
-      blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[0].data(), d, walker.gVxyz(0,r).data(), 1, zero, ro[0][r].data(), 1);
+      blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[0].data(), d, walker.gVxyz(0,r).data(), 1, zero, ro[myID*(L - 1) + 0][r].data(), 1);
 
-   C[0] = 0.0;
+   C[myID*(L - 1) + 0] = 0.0;
 
    //middle sites
    for(int i = 1;i < L - 1;++i){
@@ -281,13 +287,13 @@ complex<double> Heisenberg::energy(const MPS< complex<double> > &mps,const Walke
       int Rdim = mps[i].shape(2);
 
       //continue from previous site:
-      blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, mps[i].data(), Global::gemv_list[i], walker[i].data(), 1, zero, Global::loc[i].data(), 1);
+      blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, mps[i].data(), Global::gemv_list[i], walker[i].data(), 1, zero, Global::loc[myID*L + i].data(), 1);
 
       //I
-      blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[i].data(), Rdim, I[i - 1].data(), 1, zero, I[i].data(), 1);
+      blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[myID*L + i].data(), Rdim, I[myID*(L - 1) + i - 1].data(), 1, zero, I[myID*(L - 1) + i].data(), 1);
 
       //C
-      blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[i].data(), Rdim, C[i - 1].data(), 1, zero, C[i].data(), 1);
+      blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[myID*L + i].data(), Rdim, C[myID*(L - 1) + i - 1].data(), 1, zero, C[myID*(L - 1) + i].data(), 1);
 
       //transfer previous operators
       for(int j = 0;j < job_cont[i-1].size();++j){
@@ -296,24 +302,24 @@ complex<double> Heisenberg::energy(const MPS< complex<double> > &mps,const Walke
          int output = job_cont[i - 1][j][1];
 
          for(int r = 0;r < 3;++r)
-            blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[i].data(), Rdim, ro[i - 1][input*3 + r].data(), 1, zero, ro[i][output*3 + r].data(), 1);
+            blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[myID*L + i].data(), Rdim, ro[myID*(L - 1) + i - 1][input*3 + r].data(), 1, zero, ro[myID*(L - 1) + i][output*3 + r].data(), 1);
 
       }
 
       //start up new operators and close down couples
       for(int r = 0;r < 3;++r){
 
-         blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, mps[i].data(), Global::gemv_list[i], walker.gVxyz(i,r).data(), 1, zero, Global::loc[i].data(), 1);
+         blas::gemv(CblasRowMajor, CblasTrans, d, Global::gemv_list[i], one, mps[i].data(), Global::gemv_list[i], walker.gVxyz(i,r).data(), 1, zero, Global::loc[myID*L + i].data(), 1);
 
          //start up
-         blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[i].data(), Rdim, I[i - 1].data(), 1, zero, ro[i][3*(no[i] - 1) + r].data(), 1);
+         blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, one, Global::loc[myID*L + i].data(), Rdim, I[myID*(L - 1) + i - 1].data(), 1, zero, ro[myID*(L - 1) + i][3*(no[i] - 1) + r].data(), 1);
 
          //close down
          for(int j = 0;j < job_close[i - 1].size();++j){
 
             int input = job_close[i - 1][j];
 
-            blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, close_coupling[i - 1][j], Global::loc[i].data(), Rdim, ro[i - 1][input*3 + r].data(), 1, one, C[i].data(), 1);
+            blas::gemv(CblasRowMajor, CblasTrans, Ldim, Rdim, close_coupling[i - 1][j], Global::loc[myID*L + i].data(), Rdim, ro[myID*(L - 1) + i - 1][input*3 + r].data(), 1, one, C[myID*(L - 1) + i].data(), 1);
 
          }
 
@@ -322,16 +328,16 @@ complex<double> Heisenberg::energy(const MPS< complex<double> > &mps,const Walke
    }
 
    //now get the result
-   blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[L - 1].data(), d, walker[L - 1].data(), 1, zero, Global::loc[L - 1].data(), 1);
+   blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[L - 1].data(), d, walker[L - 1].data(), 1, zero, Global::loc[myID*L + L - 1].data(), 1);
 
-   complex<double> val = blas::dot(d,C[L - 2].data(),1,Global::loc[L - 1].data(),1);
+   complex<double> val = blas::dot(d,C[myID*(L - 1) + L - 2].data(),1,Global::loc[myID*L + L - 1].data(),1);
 
    for(int r = 0;r < 3;++r){
 
-      blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[L - 1].data(), d, walker.gVxyz(L - 1,r).data(), 1, zero, Global::loc[L - 1].data(), 1);
+      blas::gemv(CblasRowMajor, CblasTrans, d, d, one, mps[L - 1].data(), d, walker.gVxyz(L - 1,r).data(), 1, zero, Global::loc[myID*L + L - 1].data(), 1);
 
       for(int j = 0;j < no[L - 2];++j)
-         val += close_coupling[L - 2][j] * blas::dot(d,ro[L - 2][j*3 + r].data(),1,Global::loc[L - 1].data(),1);
+         val += close_coupling[L - 2][j] * blas::dot(d,ro[myID*(L - 1) + L - 2][j*3 + r].data(),1,Global::loc[myID*L + L - 1].data(),1);
 
    }
 
@@ -345,27 +351,30 @@ complex<double> Heisenberg::energy(const MPS< complex<double> > &mps,const Walke
 void Heisenberg::init_storage(const MPS< complex<double> > &mps){
 
    int L = Global::gL();
+   int nomp = Global::gomp_num_threads();
 
-   I.resize(L - 1);
+   I.resize( nomp * (L - 1) );
 
-   C.resize(L - 1);
+   C.resize( nomp * (L - 1) );
 
-   for(int i = 0;i < L - 1;++i){
+   for(int proc = 0;proc < nomp;++proc)
+      for(int i = 0;i < L - 1;++i){
 
-      I[i].resize(1,mps[i].shape(2));
-      C[i].resize(1,mps[i].shape(2));
+         I[proc * (L - 1) + i].resize(1,mps[i].shape(2));
+         C[proc * (L - 1) + i].resize(1,mps[i].shape(2));
 
-   }
+      }
 
-   ro.resize(L - 1);
+   ro.resize( nomp * (L - 1) );
 
-   for(int i = 0;i < L - 1;++i){
+   for(int proc = 0;proc < nomp;++proc)
+      for(int i = 0;i < L - 1;++i){
 
-      ro[i].resize(3*no[i]);//xyz 
+         ro[proc * (L - 1) + i].resize(3*no[i]);//xyz 
 
-      for(int j = 0;j < 3*no[i];++j)
-         ro[i][j].resize(1,mps[i].shape(2));
+         for(int j = 0;j < 3*no[i];++j)
+            ro[proc * (L - 1) + i][j].resize(1,mps[i].shape(2));
 
-   }
+      }
 
- }
+}

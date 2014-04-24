@@ -54,7 +54,7 @@ class AFQMC {
       double dtau;
 
       //propagator
-      Propagator *P;
+      Propagator **P;
       
       //!Trial wfn 
       MPS< complex<double> > Psi0;

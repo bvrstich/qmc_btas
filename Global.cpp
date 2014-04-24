@@ -31,22 +31,25 @@ vector<int> Global::gemv_list;
 
 vector< TArray<complex<double>,2> > Global::loc;
 
-Walker Global::backup_walker;
+vector< Walker > Global::backup_walker;
 
 std::vector< std::vector< complex<double> > > Global::auxvec;
+
+int Global::omp_num_threads;
 
 /**
  * initialize the storage on dimensions of input MPS
  */
 void Global::init_storage(const MPS< complex<double> > &mps){
 
-   LO.resize(L);
-   RO.resize(L);
+   LO.resize(omp_num_threads * L);
+   RO.resize(omp_num_threads * L);
 
-   for(int i = 0;i < L;++i){
+   for(int proc = 0;proc < omp_num_threads;++proc)
+      for(int i = 0;i < L;++i){
 
-      LO[i].resize(mps[i].shape(2));
-      RO[i].resize(mps[i].shape(1));
+      LO[proc*L + i].resize(mps[i].shape(2));
+      RO[proc*L + i].resize(mps[i].shape(1));
 
    }
 
@@ -56,19 +59,26 @@ void Global::init_storage(const MPS< complex<double> > &mps){
    for(int i = 0;i < L;++i)
       gemv_list[i] = mps[i].shape(1)*mps[i].shape(2);
 
-   loc.resize(L);
+   loc.resize(omp_num_threads * L);
 
-   for(int i = 0;i < L;++i)
-      loc[i].resize(mps[i].shape(1),mps[i].shape(2));
+   for(int proc = 0;proc < omp_num_threads;++proc)
+      for(int i = 0;i < L;++i)
+         loc[proc*L + i].resize(mps[i].shape(1),mps[i].shape(2));
 
-   backup_walker.resize(L);
+   backup_walker.resize(omp_num_threads);
 
-   for(int i = 0;i < L;++i)
-      backup_walker[i].resize(d);
+   for(int proc = 0;proc < omp_num_threads;++proc){
 
-   auxvec.resize(L);
+      backup_walker[proc].resize(L);
 
-   for(int i = 0;i < L;++i)//for x,y and z components
+      for(int i = 0;i < L;++i)
+         backup_walker[proc][i].resize(d);
+
+   }
+
+   auxvec.resize(omp_num_threads * L);
+
+   for(int i = 0;i < auxvec.size();++i)//for x,y and z components
       auxvec[i].resize(3);
 
 }
@@ -99,6 +109,12 @@ double Global::rgen(){
  * @param pbc true if periodic boundary conditions are assumed
  */
 void Global::init(int Lx_in,int Ly_in,int j2_in,int d_in,int D_in,bool pbc_in){
+
+#ifdef _OPENMP
+   omp_num_threads = omp_get_max_threads();
+#else
+   omp_num_threads = 1;
+#endif
 
    Lx = Lx_in;
    Ly = Ly_in;
@@ -189,5 +205,14 @@ int Global::gj2() {
 double Global::gJ2() {
 
    return J2;
+
+}
+
+/**
+ * @return the number of omp threads
+ */
+int Global::gomp_num_threads(){
+
+   return omp_num_threads;
 
 }
