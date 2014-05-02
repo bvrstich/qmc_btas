@@ -33,10 +33,19 @@ int main(int argc,char *argv[]){
 
    //read in the trial state
    char filename[200];
-   sprintf(filename,"input/J1J2/%dx%d/J2=0.%d/Psi0/DT=%d.mps",L,L,j2,D);
+   sprintf(filename,"input/J1J2/%dx%d/J2=0.%d/PsiW/DT=%d.mps",L,L,j2,D);
 
    MPS< complex<double> > mps(filename);
 
+   sprintf(filename,"input/J1J2/%dx%d/J2=0.%d/PsiW/DT=%dbis.mps",L,L,j2,D);
+   ofstream out(filename);
+   out.precision(15);
+
+   for(int i = 0;i < L*L;++i)
+      for(int s = 0;s < d;++s)
+         out << i << "\t" << s << "\t" << mps[i](s,0,0) << endl;
+
+/*
    //intialize some storage
    Heisenberg::init_storage(mps);
    Global::init_storage(mps);
@@ -48,7 +57,7 @@ int main(int argc,char *argv[]){
    afqmc.walk(100);
 
    Heisenberg::clear();
-
+*/
    return 0;
 
 }

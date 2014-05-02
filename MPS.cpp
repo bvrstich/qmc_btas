@@ -107,7 +107,6 @@ MPS<T>::MPS(const char *filename) : vector< TArray<T,3> >() {
          for(int k = 0;k < vdim[i + 1];++k)
             for(int j = 0;j < vdim[i];++j)
                in >> i >> teller >> (*this)[i](s,j,k);
-            
 
    }
 
